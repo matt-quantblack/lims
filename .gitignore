@@ -1,0 +1,9 @@
+#user specific
+.idea
+/venv/
+
+#confidential
+/secrets.json
+
+#python
+__pycache__/

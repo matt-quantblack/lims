@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="card page-card">
+      <div class="card-body">
+        <h5 class="card-title">
+            {% if id %}
+                Sample Reference {{ id }}<br/>
+                <a class="btn btn-info" href="{% url 'copysampleform' sampleid=id %}">Copy</a>
+            {% else %}
+                New Sample
+            {% endif %}
+        </h5>
+        <div class="card-text">
+            <form action="" method="post">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ sampleform.name|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ sampleform.clientref|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ sampleform.batch|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ sampleform.condition|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ sampleform.description|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ sampleform.received|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ sampleform.storage|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ sampleform.client|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ sampleform.notificationgroup|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <a href="{% url 'listsamples' %}" class="btn btn-danger">Cancel</a>
+                        <input type="submit" class="btn btn-success" value="Save">
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+      </div>
+</div>
+
+    <script>
+      $(function () {
+        $("#id_received").datepicker({
+            "dateFormat": 'dd/mm/yy'
+        });
+      });
+    </script>
+{% endblock %}
