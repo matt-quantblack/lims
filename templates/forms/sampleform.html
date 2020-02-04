@@ -8,13 +8,15 @@
     <div class="card page-card">
       <div class="card-body">
         <h5 class="card-title">
+            <a class="btn btn-info" href="{% url 'listsamples' %}">Back</a>
             {% if id %}
-                Sample Reference {{ id }}<br/>
-                <a class="btn btn-info" href="{% url 'copysampleform' sampleid=id %}">Copy</a>
+                Sample #{{ id }}
+                <a class="btn btn-danger float-md-right" href="{% url 'removesample' id=id %}">Delete</a>
             {% else %}
                 New Sample
             {% endif %}
         </h5>
+        <hr>
         <div class="card-text">
             <form action="" method="post">
                 {% csrf_token %}
@@ -53,8 +55,12 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-12 text-right">
-                        <a href="{% url 'listsamples' %}" class="btn btn-danger">Cancel</a>
+                    <div class="col-md-6">
+                        {% if id %}
+                            <a class="btn btn-info" href="{% url 'copysampleform' sampleid=id %}">Copy</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 text-right">
                         <input type="submit" class="btn btn-success" value="Save">
                     </div>
                 </div>

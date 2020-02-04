@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="card page-card">
+      <div class="card-body">
+        <h5 class="card-title">
+            <a class="btn btn-info" href="{% url 'listclients' %}">Back</a>
+            {% if id %}
+                Client #{{ id }}
+                <a class="btn btn-danger float-md-right" href="{% url 'removeclient' id=id %}">Delete</a>
+            {% else %}
+                New Client
+            {% endif %}
+        </h5>
+        <hr/>
+        <div class="card-text">
+            <form action="" method="post">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-12">
+                        {{ form.name|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Address
+                            </div>
+                            <div class="card-body">
+                                <div class="card-text">
+                                    {{ form.address1|as_crispy_field }}
+                                    {{ form.address2|as_crispy_field }}
+                                    {{ form.city|as_crispy_field }}
+                                    {{ form.postcode|as_crispy_field }}
+                                    {{ form.state|as_crispy_field }}
+                                    {{ form.country|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card contacts">
+                            <div class="card-header">
+                                Contacts
+                                {% if id %}
+                                    <a href="{% url 'listcontacts' clientid=id %}" id="edit_contacts" class="btn btn-info float-md-right">Edit</a>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <div class="card-text">
+                                    {% if id %}
+                                        {% if contacts|length > 0 %}
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                </thead>
+                                                <tbody class="contacts_list clickable"  clientid="{{ id }}">
+                                                    {% for contact in contacts %}
+                                                        <tr><td>{{ contact.firstname }} {{ contact.lastname }}</td>
+                                                            <td>{{ contact.email }}</td></tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        {% else %}
+                                            No contacts.
+                                        {%  endif %}
+                                    {%  else %}
+                                        Save client before adding contacts.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <a href="{% url 'listclients' %}" class="btn btn-danger">Cancel</a>
+                        <input type="submit" class="btn btn-success" value="Save">
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+      </div>
+</div>
+
+
+{% endblock %}

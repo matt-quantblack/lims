@@ -1,2 +1,2 @@
-# lims
-A laboratory Information Management System (DJango) for recording samples and test results
+# LIMS
+A Laboratory Information Management System using Django framework for recording samples and test results.

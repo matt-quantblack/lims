@@ -2,7 +2,9 @@ from rest_framework import serializers
 from rest_framework import generics
 #from django.core import serializers
 from .models import Sample
-from eldashboard.models import Clients
+from .models import Clients
+from .models import Contacts
+from .models import TestMethods
 
 
 class DropDownSerializer(serializers.Serializer):
@@ -22,8 +24,23 @@ class SampleSerializer(serializers.ModelSerializer):
         model = Sample
         fields = ('__all__')
 
+class ClientSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Clients
+        fields = ('__all__')
 
+class ContactSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Contacts
+        fields = ('__all__')
+
+class TestMethodSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TestMethods
+        fields = ('__all__')
 """
 NESTED RELATIONSHIPS
 class TrackSerializer(serializers.ModelSerializer):

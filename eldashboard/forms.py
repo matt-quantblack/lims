@@ -1,7 +1,10 @@
 from django import forms
 from ELLIMS import settings
 
-from eldashboard.models import Sample
+from .models import Sample
+from .models import Clients
+from .models import Contacts
+
 
 class SampleForm(forms.ModelForm):
 
@@ -19,3 +22,17 @@ class SampleForm(forms.ModelForm):
          'clientref': 'Client Ref',
          'notificationgroup': 'Notification Group'
       }
+
+
+class ClientForm(forms.ModelForm):
+
+   class Meta:
+      model = Clients
+      fields = '__all__'
+
+class ContactForm(forms.ModelForm):
+
+   class Meta:
+      model = Contacts
+      fields = ['firstname', 'lastname', 'email', 'phone', 'client']
+      widgets = {'client': forms.HiddenInput()}

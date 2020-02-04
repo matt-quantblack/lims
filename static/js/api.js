@@ -8,26 +8,38 @@ $(function () {
             });
     }
 
-    function render_tr_list(target, data, should_clear_list) {
+    function render_list(target, data, render_string, should_clear_list) {
 
         if(should_clear_list)
             $(target).empty();
 
-        $.each(data.data, function (index, item) {
-          onclick_func = "window.location.href='sample/" + item.id + "'";
-          html = '<tr id="sampleid' + item.id +'" onclick="' + onclick_func + '"><td>' + item.id +
-              '</td><td>' + item.client + '</td><td>' +
-              item.clientref +'</td><td>' + item.batch + '</td><td>' + item.name + '</td><td></td></tr>';
 
-          $(target).append($(html));
+        $.each(data.data, function (index, item) {
+            line_render = render_string;
+            $.each(Object.keys(item), function (index, key) {
+                  line_render = line_render.split("{"+key+"}").join(item[key]);
+            });
+          $(target).append($(line_render));
 
         });
 
         if(!data.more)
             $(".more-pages").hide()
+
+        //toggle the table, loading and no items cards
+        $('#table-card-load').hide();
+        if(data.data.length == 0) {
+            $('#table-card').hide();
+            $('#table-card-none').show();
+        }
+        else {
+            $('#table-card-none').hide();
+            $('#table-card').show();
+        }
     }
 
-    function send_api_request(url, data, target, renderer, should_clear_list)
+
+    function send_api_request(url, data, target, renderer, render_string, should_clear_list)
     {
         $.ajax({
         url: url,
@@ -35,31 +47,56 @@ $(function () {
         dataType: 'json',
         success: function (data) {
           if (data) {
-              renderer(target, data, should_clear_list);
+              renderer(target, data, render_string, should_clear_list);
           }
         }
       });
     }
 
-    $(".search-samples-input").keyup(function () {
-       text = $(this).val();
-       send_api_request("/api/searchsamples",{ 'q': text}, '#sample_list tbody', render_tr_list, true);
-    });
 
-    $(".search-samples-more").click(function () {
-       text = $(this).val();
-       page = $(this).attr('page');
-       $(this).attr('page', parseInt(page)+1);
-       send_api_request("/api/searchsamples",{ 'q': text, 'page': page}, '#sample_list tbody', render_tr_list, false);
-    });
-
-
+    //dynamic dropdown box selections based on a value from another field
     $("#id_client").change(function () {
        id = $(this).val();
        send_api_request("/api/linkednotifcationgroups",{ 'client_id': id}, '#id_notificationgroup', render_dd_list);
     });
 
     //page loads for lists
-    if($(".search-samples-input").length)
-        send_api_request("/api/searchsamples",{ 'q': '', 'page': 1}, '#sample_list tbody', render_tr_list, true);
+    if($("#item_list").length)
+        apiurl = $("#apiurl").val();
+        render_string = $("#renderstring").val();
+        if($("#refid").length)
+            refid = $("#refid").val();
+        else
+            refid = -1;
+        send_api_request(apiurl,{ 'q': '', 'page': 1, 'refid':refid}, '#item_list tbody', render_list, render_string, true);
+
+
+
+    //list searches
+    $("#search-input").keyup(function () {
+       text = $(this).val();
+       apiurl = $("#apiurl").val();
+       render_string = $("#renderstring").val();
+       if($("#refid").length)
+            refid = $("#refid").val();
+        else
+            refid = -1;
+       send_api_request(apiurl,{ 'q': text, 'refid':refid}, '#item_list tbody', render_list, render_string, true);
+    });
+
+
+    //list more results
+    $(".search-items-more").click(function () {
+       text = $(this).val();
+       page = $(this).attr('page');
+       apiurl = $("#apiurl").val();
+       render_string = $("#renderstring").val();
+       if($("#refid").length)
+            refid = $("#refid").val();
+        else
+            refid = -1;
+       $(this).attr('page', parseInt(page)+1);
+       send_api_request(apiurl,{ 'q': text, 'page': page, 'refid': refid}, '#item_list tbody', render_list, render_string, false);
+    });
+
 });

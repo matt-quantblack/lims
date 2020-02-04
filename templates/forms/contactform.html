@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="card page-card">
+      <div class="card-body">
+        <h5 class="card-title">
+            <a class="btn btn-info" href="{% url 'listcontacts' clientid=clientid %}">Back</a>
+            {% if id %}
+                Contact #{{ id }}
+                <a class="btn btn-danger float-md-right" href="{% url 'removecontact' clientid=clientid id=id %}">Delete</a>
+            {% else %}
+                New Contact
+            {% endif %}
+        </h5>
+        <hr>
+        <div class="card-text">
+            <form action="" method="post">
+                {% csrf_token %}
+                {{ form.client }}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.firstname|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.lastname|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.email|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.phone|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <input type="submit" class="btn btn-success" value="Save">
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+      </div>
+</div>
+
+{% endblock %}

@@ -1,6 +1,7 @@
 #user specific
 .idea
 /venv/
+TODO.txt
 
 #confidential
 /secrets.json
