@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="card page-card">
+      <div class="card-body">
+        <h5 class="card-title">
+            <a class="btn btn-info" href="{% url 'listjobs' %}">Back</a>
+            {% if id %}
+                Job #{{ id }}
+                <a class="btn btn-danger float-md-right" href="{% url 'removejob' id=id %}">Delete</a>
+            {% else %}
+                New Job
+            {% endif %}
+        </h5>
+        <hr>
+        <div class="card-text">
+            <form action="" method="post">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.client|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.ponumber|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.notificationgroup|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <input type="submit" class="btn btn-success" value="Save">
+                    </div>
+                </div>
+                {% if id %}
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="card-title">
+                                        <h5>Samples
+                                        <a class="btn btn-info float-md-right" href="{%  url 'listsamplesselection' refid=id %}">Edit</a></h5>
+                                        <br/>
+                                    </div>
+
+                                    <div class="card-text">
+                                        <hr>
+                                        <div id="jobsamples">
+                                            {% include "includes/jobsample.html" %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="card-title">
+                                        <h5>Assign Tests
+                                        <span class="btn btn-info float-md-right" id="assigntests" job_id="{{ id }}">Assign</span></h5>
+                                        <br/>
+                                    </div>
+                                    <div class="card-text">
+                                        <hr>
+                                        <table>
+                                            <tbody>
+                                                <tr>
+                                                    <td style="padding-right: 40px; padding-bottom: 40px;">
+                                                        Add Test
+                                                    </td>
+                                                    <td style="padding-right: 40px; padding-bottom: 40px;">
+                                                       <div class="dropdown">
+                                                          <button id="testselect" class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                            Please Select
+                                                          </button>
+                                                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                              {% for t in tests %}
+                                                                <span class="dropdown-item" value="{{ t.id }}">TM{{ t.tmnumber }} - {{t.name}}</span>
+                                                              {% endfor %}
+                                                          </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding-right: 40px; padding-bottom: 40px;">
+                                                        Apply to
+                                                    </td>
+                                                    <td style="padding-right: 40px; padding-bottom: 40px;">
+                                                        <div class="form-check-inline">
+                                                          <label class="form-check-label">
+                                                            <input id="applyall" type="radio" class="form-check-input" name="optradio" checked>All Samples
+                                                          </label>
+                                                        </div>
+                                                        <div class="form-check-inline">
+                                                          <label class="form-check-label">
+                                                            <input type="radio" class="form-check-input" name="optradio">Selected Samples
+                                                          </label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+
+            </form>
+        </div>
+
+      </div>
+</div>
+    <script>
+      $(function() {
+
+          $(".dropdown-menu span").click(function () {
+
+              $("#testselect:first-child").text($(this).text());
+              $("#testselect:first-child").val($(this).attr('value'));
+
+          });
+      });
+    </script>
+
+
+
+});
+{% endblock %}

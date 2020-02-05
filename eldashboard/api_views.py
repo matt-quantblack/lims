@@ -1,5 +1,6 @@
 
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
 from django.db.models import Q
@@ -10,12 +11,21 @@ from .models import Clients
 from .models import Contacts
 from .models import TestMethods
 from .models import NotificationGroups
+from .models import Job
+from .models import SampleTests, JobSample
 
 from .serializers import SampleSerializer
 from .serializers import ClientSerializer
 from .serializers import ContactSerializer
 from .serializers import TestMethodSerializer
 from .serializers import DropDownSerializer
+from .serializers import JobListSerializer
+from .serializers import serialize_jobsample
+
+from django.shortcuts import redirect
+
+from django.db.models.functions import Cast
+from django.db.models import CharField
 
 
 
@@ -35,9 +45,57 @@ def linkednotifcationgroups(request):
 
     return JsonResponse(serializer.data, safe=False)
 
+def addsamples(request):
+    job_id = request.GET.get('refid', None)
+    sample_ids = request.GET.get('ids', None)
+
+    if job_id.isnumeric():
+        job_id = int(job_id)
+        selected = sample_ids.split(',')
+
+        for id in selected:
+            if id.isnumeric():
+                jobsample = JobSample()
+                jobsample.sample_id = id
+                jobsample.save()
+
+                job = Job.objects.get(id=job_id)
+                job.jobsamples.add(jobsample)
+
+                job.save()
+
+    return JsonResponse({'success': True})
+
+def assignsamples(request):
+
+    job_id = request.GET.get('job_id', None)
+    test_id = request.GET.get('test_id', None)
+    jobsample_id = request.GET.get('jobsample_id', None) #-1 means all samples for this job
+
+
+    if jobsample_id is not None and jobsample_id != -1:
+        selected = jobsample_id.split(',')
+    else:
+        selected = []
+
+    samples = []
+    jobsamples = Job.objects.get(id=job_id).jobsamples.all()
+
+    for jobsample in jobsamples:
+
+        if jobsample_id == "-1" or str(jobsample.id) in selected:
+            sampletest = SampleTests()
+            sampletest.jobsample_id = jobsample.id
+            sampletest.test_id = test_id
+            sampletest.save()
+
+        samples.append(serialize_jobsample(jobsample))
+
+    return render(request, 'includes/jobsample.html',
+                  {"samples": samples})
+
 
 def searchsamples(request):
-
 
     query = request.GET.get('q')
     page_size = request.GET.get('page_size', 20)
@@ -72,8 +130,42 @@ def searchsamples(request):
 
     return JsonResponse(context)
 
-def searchclients(request):
+def searchjobs(request):
 
+    query = request.GET.get('q')
+    page_size = request.GET.get('page_size', 20)
+    page = request.GET.get('page')
+
+    if query:
+        results = Job.objects.annotate(id_str=Cast('jobsample__sample_id', output_field=CharField()),).\
+            filter(Q(id__icontains=query) |\
+                   Q(client__name__icontains=query) |\
+                   Q(id_str__icontains=query) |\
+                   Q(jobsample__sample__name__icontains=query)).order_by("-id")
+
+    else:
+        results = Job.objects.all().order_by("-id")
+
+    paginator = Paginator(results, page_size)
+
+    try:
+        res = paginator.page(page)
+    except PageNotAnInteger:
+        res = paginator.page(1)
+    except EmptyPage:
+        res = paginator.page(paginator.num_pages)
+
+    # format queryset into json for returning
+    serializer = JobListSerializer(res, many=True)
+
+    context = {
+        'data': serializer.data,
+        'more': res.has_next()
+    }
+
+    return JsonResponse(context)
+
+def searchclients(request):
 
     query = request.GET.get('q')
     page_size = request.GET.get('page_size', 20)

@@ -43,7 +43,7 @@
                 <thead>
                     <tr>
                         {% for column in columns %}
-                            <th {% if column|length == 2 %} class="w-{{ column.width }}" {% endif %} >{{ column.name }}</th>
+                            <th {% if column|length == 2 %} style="width: {{column.width}}%" {% endif %} >{{ column.name }}</th>
                         {% endfor %}
                     </tr>
                 </thead>

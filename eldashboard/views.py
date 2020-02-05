@@ -1,16 +1,16 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
-from django.http import JsonResponse
+from django.db.models import Max
 
 
 from .forms import SampleForm
 from .forms import ClientForm
 from .forms import ContactForm
+from .forms import TestMethodForm
+from .forms import JobForm
 
-from .models import Sample
-from .models import Clients
-from .models import Contacts
-from .models import NotificationGroups
+from .models import Sample, Clients, Contacts, TestMethods, Job, JobSample, JobReports, JobActivity, SampleTests
+from .serializers import serialize_jobsample
 
 
 def dashboard(request):
@@ -33,6 +33,39 @@ def listsamples(request):
                   {'addurl': addurl, 'apiurl':apiurl, 'title':title, 'columns': columns,
                    'renderstring': renderstring})
 
+def listsamplesselection(request, refid):
+
+    apiurl = '/api/searchsamples'
+    title = 'Samples'
+    confirmurl = '/api/addsamples'
+    backurl = "/job/{}".format(refid)
+    columns = [{'name':'EL Ref'},
+               {'name':'Client Name'},
+               {'name':'Client Ref'},
+               {'name':'Batch'},
+               {'name':'Sample Name', 'width': 50}]
+    renderstring = '<tr id="{id}"><td>{id}</td><td>{client}</td><td>{clientref}</td><td>{batch}</td><td>{name}</td></tr>'
+    print (refid)
+    return render(request, 'lists/selectionlist.html',
+                  {'apiurl':apiurl, 'backurl': backurl, 'confirmurl': confirmurl, 'refid': refid, 'title':title, 'columns': columns,
+                   'renderstring': renderstring})
+
+def listjobs(request):
+
+    addurl = 'job'
+    apiurl = '/api/searchjobs'
+    title = 'Job Record'
+    columns = [{'name': 'Job #', 'width': 10},
+               {'name': 'Client'},
+               {'name': 'Samples', 'width': 50},
+               {'name': 'Status'}]
+    renderstring = '<tr onclick="window.location.href=\'job/{id}\'"><td>{id}</td><td>{client}</td><td>{jobsamples}</td><td></td></tr>'
+
+    return render(request, 'lists/tablelist.html',
+                  {'addurl': addurl, 'apiurl': apiurl, 'title': title, 'columns': columns,
+                   'renderstring': renderstring})
+
+
 def listclients(request):
 
     addurl = 'client'
@@ -47,7 +80,7 @@ def listclients(request):
 
 def listmethods(request):
 
-    addurl = 'client'
+    addurl = 'method'
     apiurl = '/api/searchmethods'
     title = 'Test Methods'
     columns = [{'name': 'Method Name'}]
@@ -133,7 +166,6 @@ def insertnewclient(request):
 
     return None
 
-from django.db.models import Prefetch
 def updateclientform(request, id):
 
     item = Clients.objects.get(id=id)
@@ -165,6 +197,115 @@ def removeclient(request, id):
     return redirect('/list_clients')
 
 
+##############################################################################################
+
+def insertnewjob(request):
+    form = JobForm(request.POST or None)
+
+    # save the form and redirect to the update sample page
+    if form.is_valid():
+        item = form.save()
+
+        return item
+
+    return None
+
+def updatejobform(request, id):
+
+    item = Job.objects.get(id=id)
+    samples = JobSample.objects.filter(job=id)
+    reports = JobReports.objects.filter(job=id)
+    activity = JobActivity.objects.filter(job=id)
+    results = {}
+    alltests = TestMethods.objects.all().order_by("name")
+
+    jobsamples = []
+    for sample in samples:
+        jobsamples.append(serialize_jobsample(sample))
+
+    form = JobForm(request.POST or None, instance=item)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return redirect('/list_jobs')
+
+
+    return render(request, 'forms/jobform.html', {"form": form, "samples": jobsamples, "reports": reports, "activity": activity, "results": results, "tests": alltests, "id": item.id})
+
+
+def jobform(request):
+    # create the sampleForm object from the posted form data
+    if request.method == 'POST':
+        item = insertnewjob(request)
+        return redirect('/job/{}'.format(item.id))
+    #or create a blank form if not a post
+    else:
+        form = JobForm()
+
+    return render(request, 'forms/jobform.html', {"form": form})
+
+def removejob(request, id):
+    Job.objects.filter(id=id).delete()
+    return redirect('/list_jobs')
+
+##############################################################################################
+
+
+def insertnewmethod(request):
+    form = TestMethodForm(request.POST or None)
+
+    # save the form and redirect to the update sample page
+    if form.is_valid():
+        item = form.save()
+
+        return item
+
+    return None
+
+def updatemethodform(request, id):
+
+    item = TestMethods.objects.get(id=id)
+
+    form = TestMethodForm(request.POST or None, instance=item)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return redirect('/list_methods')
+
+
+    return render(request, 'forms/methodform.html', {"form": form, "id": item.id})
+
+
+def methodform(request):
+    # create the sampleForm object from the posted form data
+    if request.method == 'POST':
+        item = insertnewmethod(request)
+        return redirect('/method/{}'.format(item.id))
+    #or create a blank form if not a post
+    else:
+        form = TestMethodForm()
+
+        #get the max test number and increment by one
+        max_tm = TestMethods.objects.aggregate(Max('tmnumber'))['tmnumber__max']
+        if max_tm:
+            numbers = [s for s in max_tm if s.isdigit()]
+            new = ""
+            for x in numbers:
+                new += x
+            new_num = int(new) + 1
+        else:
+            new_num = 1
+        form["tmnumber"].initial = new_num
+
+
+    return render(request, 'forms/methodform.html', {"form": form})
+
+def removemethod(request, id):
+    TestMethods.objects.filter(id=id).delete()
+    return redirect('/list_methods')
+
+#############################################################################################
 
 def insertnewcontact(request, clientid):
 

@@ -13,3 +13,7 @@ body
 .clickable tr:hover {
     cursor: pointer;
 }
+
+tr.selected {
+    background-color: lightblue !important;
+}

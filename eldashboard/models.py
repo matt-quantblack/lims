@@ -1,5 +1,8 @@
 from django.db import models
 
+
+
+
 class ReportTypes(models.Model):
 
     name = models.CharField(max_length=25, null=False, blank=False)
@@ -13,11 +16,11 @@ class ReportTypes(models.Model):
 class TestMethods(models.Model):
 
     name = models.CharField(max_length=25, null=False, blank=False)
-    tmnumber = models.CharField(max_length=5, verbose_name="TM #", null=False, blank=False)
-    decimalplaces = models.IntegerField(verbose_name="Decimal Places", null=False, blank=False)
-    relativeError = models.FloatField(verbose_name="Relative Error %", null=False, blank=False)
-    absoluteError = models.FloatField(verbose_name="Absolute Error", null=False, blank=False)
-    reporttype = models.ForeignKey(ReportTypes, default=1, verbose_name="Report Types", on_delete=models.SET_DEFAULT)
+    tmnumber = models.CharField(max_length=5, null=False, blank=False)
+    decimalplaces = models.IntegerField(null=False, blank=False)
+    error = models.FloatField(null=False, blank=False)
+    errortype = models.IntegerField(null=False, blank=False)
+    reporttype = models.ForeignKey(ReportTypes, default=1, on_delete=models.SET_DEFAULT)
     description = models.CharField(max_length=200, null=False, blank=True, default='')
 
     def __str__(self):
@@ -45,6 +48,8 @@ class Clients(models.Model):
     class Meta:
         db_table = "clients"
 
+
+
 class Contacts(models.Model):
 
     firstname = models.CharField(max_length=25, null=False, blank=False)
@@ -70,6 +75,13 @@ class NotificationGroups(models.Model):
     class Meta:
         db_table = "notificationgroups"
 
+
+
+
+
+
+
+
 class StorageCategory(models.Model):
 
     category = models.CharField(max_length=25)
@@ -88,7 +100,7 @@ class Sample(models.Model):
     condition = models.CharField(max_length=50, null=False, blank=True, default='')
     description = models.CharField(max_length=100, null=False, blank=True, default='')
     received = models.DateField(null=False, blank=False)
-    storage = models.ForeignKey(StorageCategory, default=1, verbose_name="Storage", on_delete=models.SET_DEFAULT)
+    storage = models.ForeignKey(StorageCategory, default=1, on_delete=models.SET_DEFAULT)
     client = models.ForeignKey(Clients, on_delete=models.CASCADE)
     notificationgroup = models.ForeignKey(NotificationGroups, null=True, on_delete=models.SET_NULL)
 
@@ -96,3 +108,66 @@ class Sample(models.Model):
     class Meta:
         db_table = "samples"
 
+
+class JobSample(models.Model):
+
+    sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return self.sample.name
+
+    class Meta:
+        db_table = "jobsamples"
+
+
+class SampleTests(models.Model):
+
+    jobsample = models.ForeignKey(JobSample, on_delete=models.CASCADE)
+    test = models.ForeignKey(TestMethods, on_delete=models.CASCADE)
+    testresult = models.CharField(max_length=25, null=False, blank=True, default='')
+    testunits = models.CharField(max_length=25, null=False, blank=True, default='')
+
+    def __str__(self):
+        return self.jobsample.sample.name
+
+    class Meta:
+        db_table = "sampletests"
+
+class Job(models.Model):
+
+    ponumber = models.CharField(max_length=25)
+    client = models.ForeignKey(Clients, on_delete=models.CASCADE)
+    notificationgroup = models.ForeignKey(NotificationGroups, null=True, on_delete=models.SET_NULL)
+
+    jobsamples = models.ManyToManyField(JobSample)
+
+    def __str__(self):
+        return "Job #{}".format(self.id)
+
+    class Meta:
+        db_table = "jobs"
+
+class JobReports(models.Model):
+
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, null=False, blank=False)
+    filepath = models.CharField(max_length=100, null=False, blank=False)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "jobreports"
+
+class JobActivity(models.Model):
+
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField()
+    details = models.CharField(max_length=200, null=False, blank=False)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "jobactivity"

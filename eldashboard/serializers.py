@@ -2,14 +2,32 @@ from rest_framework import serializers
 from rest_framework import generics
 #from django.core import serializers
 from .models import Sample
+from .models import JobSample
+from .models import Job
 from .models import Clients
 from .models import Contacts
-from .models import TestMethods
+from .models import TestMethods, SampleTests
 
+
+
+def serialize_jobsample(jobsample):
+    sample = {'id': jobsample.id, 'sample': {'name': jobsample.sample.name, 'id': jobsample.sample.id}}
+
+    alltests = SampleTests.objects.filter(jobsample_id=jobsample.id).all()
+    sample["tests"] = []
+    for t in alltests:
+        sample["tests"].append({'name': t.test.name, 'tmnumber': t.test.tmnumber})
+
+    return sample
 
 class DropDownSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=True)
     name = serializers.CharField(max_length=50)
+
+class TestMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TestMethods
+        fields = ('__all__')
 
 class SampleSerializer(serializers.ModelSerializer):
 
@@ -24,6 +42,31 @@ class SampleSerializer(serializers.ModelSerializer):
         model = Sample
         fields = ('__all__')
 
+class JobSampleListSerializer(serializers.ModelSerializer):
+
+    name = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        return "#{} {}".format(obj.sample.id, obj.sample.name)
+
+    class Meta:
+        model = JobSample
+        fields = ['name']
+
+class JobListSerializer(serializers.ModelSerializer):
+
+    client = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='name'
+     )
+
+    jobsamples = JobSampleListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Job
+        fields = ['id', 'client', 'jobsamples']
+
 class ClientSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -36,11 +79,7 @@ class ContactSerializer(serializers.ModelSerializer):
         model = Contacts
         fields = ('__all__')
 
-class TestMethodSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = TestMethods
-        fields = ('__all__')
 """
 NESTED RELATIONSHIPS
 class TrackSerializer(serializers.ModelSerializer):

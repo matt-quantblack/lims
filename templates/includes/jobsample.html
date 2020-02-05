@@ -1,0 +1,22 @@
+{% for s in samples %}
+    <div class="card jobsample" jobsampleid="{{ s.id }}">
+        <div class="card-header card-in">
+            #{{ s.sample.id }} - {{ s.sample.name }}
+        </div>
+        <div class="card-body">
+            <div class="card-text">
+                {%  if s.tests|length > 0 %}
+                <table class="table">
+
+                    {% for t in s.tests %}
+                        <tr><td>TM{{ t.tmnumber }} {{ t.name }}</td></tr>
+                    {% endfor  %}
+                </table>
+                {% else %}
+                    No tests assigned.
+                {% endif %}
+
+            </div>
+        </div>
+    </div><br/>
+{% endfor %}
