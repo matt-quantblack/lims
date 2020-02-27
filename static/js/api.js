@@ -54,14 +54,25 @@ $(function () {
     function send_api_request(url, data, onsuccess)
     {
         $.ajax({
-        url: url,
-        data: data,
-        dataType: 'json',
-        success: function (data) {
-          onsuccess(data);
-        }
+            url: url,
+            data: data,
+            dataType: 'json',
+            success: function (data) {
+            onsuccess(data);
+            }
       });
     }
+
+    //dropdown functionalioty
+    $(".dropdown .dropdown-menu span").click(function () {
+
+        $($(this).parent().parent().children()[0]).text($(this).text());
+        $($(this).parent().parent().children()[0]).val($(this).attr('value'));
+
+        if($(this).hasClass('datavalue'))
+            $('#unsaved').show();
+
+    });
 
     $("#confirm_selection").click(function() {
        apiurl = $("#confirmurl").val();
@@ -76,10 +87,117 @@ $(function () {
        send_api_request(apiurl,{ 'ids': ids, 'refid':refid}, function() { window.location.replace(backurl) });
     });
 
+    $(".delete_result").click(function() {
+        $(this).attr('disabled', true);
+        id = $(this).attr('testid');
+        row = $(this).parent().parent();
+        send_api_request('/api/deleteresult', {'id': id}, function () {
+                row.remove();
+            });
+    });
+
+    $("#save_results").click(function() {
+
+        count = 0;
+        $(".test_result").each(function() {
+            $("#save_results").attr('disabled', true);
+            id = $(this).attr('id');
+            testdate = $(this).find(".testdate-input").val();
+            value = $(this).find(".value-input").val();
+            units = $(this).find(".units-input").val();
+            officer = $(this).find(".officer-input").attr('value');
+            loc = $(this).find(".location-input").attr('value');
+            data = {
+                'id': id,
+                'testdate': testdate,
+                'value': value,
+                'units': units,
+                'officer': officer,
+                'location': loc
+            };
+            count += 1;
+            send_api_request('/api/saveresults', data, function () {
+                count -= 1;
+                if (count == 0) $("#save_results").attr('disabled', false);
+                $("#unsaved").hide()
+            });
+        });
+
+
+
+
+    });
+
+    $("#generate_report").click(function() {
+        button = $(this);
+        button.attr('disabled', true);
+        render_string = $("#renderstring").val();
+        id = $(this).attr('jobid');
+        reportname = $("#reportname-input").val()
+        reporttypeid = $("#report_type").attr('value');
+        getstring = "?jobid="+id+"&reporttypeid="+reporttypeid+"&reportname="+reportname;
+        $(".should-include:checked").each(function() {
+            getstring += "&testids="+$(this).attr('testid');
+        });
+
+        send_api_request('/api/generatereport' + getstring, {}, function (data) {
+                button.attr('disabled', false);
+                render_list('#reportlist tbody', data, render_string, false);
+            });
+    });
+
+
+    $("#reportlist").on('click', '.delete_report', function() {
+        button = $(this);
+        button.attr('disabled', true);
+        id = $(this).attr('reportid');
+        row = $(this).parent().parent();
+
+        send_api_request('/api/deletereport', {'reportid': id}, function (data) {
+                row.remove()
+            });
+    });
+
+    $("#reportlist").on('click', '.download_report', function() {
+        id = $(this).attr('reportid');
+        window.location = "/api/downloadreport?reportid="+id;
+    });
+
+    $("#reportlist").on('click', '.email_report', function() {
+        button = $(this);
+        button.attr('disabled', true);
+        id = $(this).attr('reportid');
+        send_api_request('/api/emailreport', {'reportid': id}, function (data) {
+            button.attr('disabled', false);
+            if(data["success"] == true)
+                button.text("Emailed!");
+            else
+                button.text("Email Failed!");
+        });
+    });
+
     $("#add_items").click(function(){
             rows = $("#item_list tr.selected");
             rows.remove();
-            $("#select_list").append(rows);
+            rows.each(function(index, row) {
+                id = $(row).attr("id");
+                if($("#select_list tr[id='"+id+"']").length == 0)
+                    $("#select_list").append(row);
+            });
+
+            $(".selected").removeClass("selected");
+    });
+
+    $("#remove_items").click(function(){
+            rows = $("#select_list tr.selected");
+            rows.remove();
+
+            rows.each(function(index, row) {
+                id = $(row).attr("id");
+                if($("#item_list tr[id='"+id+"']").length == 0)
+                    $("#item_list").append(row);
+            });
+
             $(".selected").removeClass("selected");
     });
 
@@ -128,13 +246,14 @@ $(function () {
     //page loads for lists
     if($("#item_list").length) {
         apiurl = $("#apiurl").val();
+        text = $("#search-input").val();
         render_string = $("#renderstring").val();
         if ($("#refid").length)
             refid = $("#refid").val();
         else
             refid = -1;
         send_api_request(apiurl, {
-            'q': '',
+            'q': text,
             'page': 1,
             'refid': refid
         }, function(data) {render_list('#item_list tbody', data, render_string, true);});

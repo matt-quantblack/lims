@@ -34,6 +34,7 @@ class ClientForm(forms.ModelForm):
 class TestMethodForm(forms.ModelForm):
 
    CHOICES = (
+      (0, 'N/A'),
       (1, 'Relative Error'),
       (2, 'Absolute Error')
    )

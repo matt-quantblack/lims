@@ -25,7 +25,7 @@
                       <div class="input-group-prepend">
                         <span class="input-group-text" id="basic-addon1">Search</span>
                       </div>
-                      <input id="search-input" type="text" class="form-control" placeholder="Search">
+                      <input id="search-input" type="text" class="form-control" placeholder="Search" value="{{ initialsearch }}">
                     </div>
                 </div>
             </div>
@@ -85,7 +85,15 @@
                             </tr>
                         </thead>
                         <tbody class="clickable selection_table" id="selected_table">
-
+                            {% for item in selected %}
+                                <tr id="{{ item.sample.id }}">
+                                    <td>{{ item.sample.id }}</td>
+                                    <td>{{ item.sample.client }}</td>
+                                    <td>{{ item.sample.clientref }}</td>
+                                    <td>{{ item.sample.batch }}</td>
+                                    <td>{{ item.sample.name }}</td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

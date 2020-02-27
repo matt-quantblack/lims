@@ -41,7 +41,9 @@
             </ul>
         </div>
         <span class="navbar-text">
-          Logout
+
+                    <a href="{% url 'logout' %}?next=/login">Logout</a>
+
         </span>
     </nav>
     {% block content %} Body content {% endblock %}

@@ -1,17 +1,15 @@
 from rest_framework import serializers
 from rest_framework import generics
 #from django.core import serializers
-from .models import Sample
-from .models import JobSample
-from .models import Job
-from .models import Clients
-from .models import Contacts
-from .models import TestMethods, SampleTests
-
+from .models import *
 
 
 def serialize_jobsample(jobsample):
-    sample = {'id': jobsample.id, 'sample': {'name': jobsample.sample.name, 'id': jobsample.sample.id}}
+    sample = {'id': jobsample.id, 'sample': {'name': jobsample.sample.name,
+                                             'id': jobsample.sample.id,
+                                             'client': jobsample.sample.client,
+                                             'clientref': jobsample.sample.clientref,
+                                             'batch': jobsample.sample.batch}}
 
     alltests = SampleTests.objects.filter(jobsample_id=jobsample.id).all()
     sample["tests"] = []
@@ -27,6 +25,18 @@ class DropDownSerializer(serializers.Serializer):
 class TestMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestMethods
+        fields = ('__all__')
+
+class JobReportSerializer(serializers.ModelSerializer):
+
+    job = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='id'
+    )
+
+    class Meta:
+        model = JobReports
         fields = ('__all__')
 
 class SampleSerializer(serializers.ModelSerializer):
@@ -65,7 +75,7 @@ class JobListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Job
-        fields = ['id', 'client', 'jobsamples']
+        fields = ['id', 'client', 'jobsamples', 'status']
 
 class ClientSerializer(serializers.ModelSerializer):
 

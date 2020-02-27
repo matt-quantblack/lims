@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <input id="renderstring" type="hidden" value="{{ renderstring }}">
+
+    <div class="card page-card">
+      <div class="card-body">
+        <div class="card-text">
+            <div class="row">
+                <div class="col-md-6">
+                    <a class="btn btn-info" href="{{ backurl }}">Back</a>
+                </div>
+                <div class="col-md-6">
+                    <div class="float-right">
+                    <table>
+                        <tr>
+                            <td style="padding-right: 25px">
+                                <h2 id="unsaved" class="text-danger" style="display: none">UNSAVED CHANGES</h2>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle officer-input" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                        value="{{ default.report.id }}" id="report_type">{{ default.report}}</button>
+                                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                      {% for r in reporttypes %}
+                                        <span class="dropdown-item" value="{{ r.id}}">{{r}}</span>
+                                      {% endfor %}
+                                  </div>
+                                </div>
+                            </td>
+                            <td>
+                                <input class="form-control" id="reportname-input" value="Test Report"/>
+                            </td>
+                            <td>
+                                <span class="btn btn-primary" id="generate_report" jobid="{{ jobid }}">Generate Report</span>
+                            </td>
+                            <td>
+                                <button type="button" id="save_results" class="btn btn-success">Save Results</button>
+                            </td>
+                        </tr>
+                    </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+     <div class="card page-card">
+      <div class="card-body">
+        <div class="card-text">
+            <table class="table table-striped">
+                <thead>
+                    <th></th>
+                    <th style="width: 20%">Test</th>
+                    <th style="width: 20%">Sample</th>
+                    <th>Test Date</th>
+                    <th>Value</th>
+                    <th>Units</th>
+                    <th>Officer</th>
+                    <th>Location</th>
+                    <th></th>
+                </thead>
+                <tbody>
+                    {% for r in results %}
+                        <tr class="test_result" id="{{ r.id }}">
+                            <td><div class="form-check">
+                              <input class="form-check-input should-include" type="checkbox" value="" checked testid="{{ r.id }}">
+                            </div></td>
+                            <td>{{ r.test.name }}</td>
+                            <td>{{ r.jobsample.sample.name }}</td>
+                            <td><input class="form-control testdate-input" value="{{ r.testdate }}" onchange="$('#unsaved').show()" /></td>
+                            <td><input class="form-control value-input" value="{{ r.testresult }}" onchange="$('#unsaved').show()"/></td>
+                            <td><input class="form-control units-input" value="{{ r.testunits }}" onchange="$('#unsaved').show()"/></td>
+                            <td>
+                                <div class="dropdown">
+                                    {% if r.officer != null %}
+                                          <button class="btn btn-secondary dropdown-toggle officer-input" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                        value="{{ r.officer.id }}">{{ r.officer }}</button>
+                                      {% else %}
+                                        <button class="btn btn-secondary dropdown-toggle officer-input" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                        value="{{ default.officer.id }}">{{ default.officer }}</button>
+                                      {% endif %}
+                                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                      {% for o in officers %}
+                                        <span class="dropdown-item datavalue" value="{{ o.id}}">{{o}}</span>
+                                      {% endfor %}
+                                  </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                      {% if r.location != null %}
+                                          <button class="btn btn-secondary dropdown-toggle location-input" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                        value="{{ r.location.id }}">{{ r.location.name }}</button>
+                                      {% else %}
+                                        <button class="btn btn-secondary dropdown-toggle location-input" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                        value="{{ default.location.id }}">{{ default.location }}</button>
+                                      {% endif %}
+                                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                      {% for l in locations %}
+                                        <span class="dropdown-item datavalue" value="{{ l.id}}">{{l.name}}</span>
+                                      {% endfor %}
+                                  </div>
+                                </div>
+                            </td>
+                            <td><button type="button" class="btn btn-danger delete_result" testid="{{ r.id }}">Delete</button></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+      </div>
+     </div>
+
+
+    <div class="card page-card">
+      <div class="card-body">
+        <div class="card-text">
+            <h3>Reports</h3>
+            <table class="table table-striped" id="reportlist">
+                <thead>
+                    <th></th>
+                    <th>Report Reference</th>
+                    <th style="width: 50%">Report Name</th>
+                    <th></th>
+                </thead>
+                <tbody>
+                    {% for r in reports %}
+                        <tr class="report" id="{{ r.id }}">
+                            <td><button type="button" class="btn btn-info download_report" reportid="{{ r.id }}">Download</button>
+                            <button type="button" class="btn btn-success email_report" reportid="{{ r.id }}">Email</button></td>
+                            <td>#{{ r.job_id }} - {{ r.reportno }}</td>
+                            <td>{{ r.name }}</td>
+                            <td><button type="button" class="btn btn-danger delete_report" reportid="{{ r.id }}">Delete</button></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+
+
+         </div>
+      </div>
+    </div>
+
+
+<script>
+      $(function () {
+          $(".testdate-input").datepicker({
+            "dateFormat": 'dd/mm/yy'
+          });
+          $(".testdate-input").each(function() {
+              if($(this).attr('value') == '')
+                $(this).datepicker("setDate", new Date());
+          });
+
+      });
+    </script>
+
+{% endblock %}

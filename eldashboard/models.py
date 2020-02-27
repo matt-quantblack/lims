@@ -1,6 +1,24 @@
 from django.db import models
+from django.contrib.auth.models import User
 
+class CompanyDetail(models.Model):
 
+    name = models.CharField(max_length=50, null=False, blank=False)
+    phone = models.CharField(max_length=50, null=False, blank=False)
+    email = models.CharField(max_length=50, null=False, blank=False)
+    web = models.CharField(max_length=50, null=False, blank=False)
+    address1 = models.CharField(max_length=50, null=False, blank=False)
+    address2 = models.CharField(max_length=50, null=False, blank=False)
+    city = models.CharField(max_length=50, null=False, blank=False)
+    state = models.CharField(max_length=50, null=False, blank=False)
+    postcode = models.CharField(max_length=50, null=False, blank=False)
+    country = models.CharField(max_length=50, null=False, blank=False)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "companydetails"
 
 
 class ReportTypes(models.Model):
@@ -15,8 +33,8 @@ class ReportTypes(models.Model):
 
 class TestMethods(models.Model):
 
-    name = models.CharField(max_length=25, null=False, blank=False)
-    tmnumber = models.CharField(max_length=5, null=False, blank=False)
+    name = models.CharField(max_length=100, null=False, blank=False)
+    tmnumber = models.CharField(max_length=15, null=False, blank=False)
     decimalplaces = models.IntegerField(null=False, blank=False)
     error = models.FloatField(null=False, blank=False)
     errortype = models.IntegerField(null=False, blank=False)
@@ -32,7 +50,7 @@ class TestMethods(models.Model):
 
 class Clients(models.Model):
 
-    name = models.CharField(max_length=25, null=False, blank=False)
+    name = models.CharField(max_length=50, null=False, blank=False)
 
     address1 = models.CharField(max_length=50, verbose_name="Address 1", null=False, blank=False)
     address2 = models.CharField(max_length=50, verbose_name="Address 2", null=True, blank=True, default='')
@@ -75,13 +93,6 @@ class NotificationGroups(models.Model):
     class Meta:
         db_table = "notificationgroups"
 
-
-
-
-
-
-
-
 class StorageCategory(models.Model):
 
     category = models.CharField(max_length=25)
@@ -94,16 +105,16 @@ class StorageCategory(models.Model):
 
 class Sample(models.Model):
 
-    name = models.CharField(max_length=50)
-    clientref = models.CharField(max_length=50, default='')
+    name = models.CharField(max_length=100)
+    clientref = models.CharField(max_length=100, default='')
     batch = models.CharField(max_length=50, null=False, blank=True, default='')
-    condition = models.CharField(max_length=50, null=False, blank=True, default='')
+    condition = models.CharField(max_length=100, null=False, blank=True, default='')
     description = models.CharField(max_length=100, null=False, blank=True, default='')
     received = models.DateField(null=False, blank=False)
     storage = models.ForeignKey(StorageCategory, default=1, on_delete=models.SET_DEFAULT)
     client = models.ForeignKey(Clients, on_delete=models.CASCADE)
     notificationgroup = models.ForeignKey(NotificationGroups, null=True, on_delete=models.SET_NULL)
-
+    notified = models.BooleanField(default=False)
 
     class Meta:
         db_table = "samples"
@@ -113,20 +124,44 @@ class JobSample(models.Model):
 
     sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
 
-
     def __str__(self):
         return self.sample.name
 
     class Meta:
         db_table = "jobsamples"
 
+class Users(models.Model):
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    firstname = models.CharField(max_length=25, null=False, blank=False)
+    lastname = models.CharField(max_length=25, null=False, blank=False)
+    title = models.CharField(max_length=25, null=False, blank=False)
+
+    def __str__(self):
+        return "{} {}".format(self.firstname, self.lastname)
+
+    class Meta:
+        db_table = "users"
+
+class Locations(models.Model):
+
+    name = models.CharField(max_length=25, null=False, blank=False)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "locations"
 
 class SampleTests(models.Model):
 
     jobsample = models.ForeignKey(JobSample, on_delete=models.CASCADE)
     test = models.ForeignKey(TestMethods, on_delete=models.CASCADE)
-    testresult = models.CharField(max_length=25, null=False, blank=True, default='')
-    testunits = models.CharField(max_length=25, null=False, blank=True, default='')
+    testresult = models.CharField(max_length=50, null=False, blank=True, default='')
+    testunits = models.CharField(max_length=50, null=False, blank=True, default='')
+    testdate = models.CharField(max_length=25, null=False, blank=True, default='')
+    officer = models.ForeignKey(Users, null=True, on_delete=models.SET_NULL)
+    location = models.ForeignKey(Locations, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.jobsample.sample.name
@@ -139,7 +174,8 @@ class Job(models.Model):
     ponumber = models.CharField(max_length=25)
     client = models.ForeignKey(Clients, on_delete=models.CASCADE)
     notificationgroup = models.ForeignKey(NotificationGroups, null=True, on_delete=models.SET_NULL)
-
+    status = models.CharField(max_length=25, default="Open")
+    invoiceno = models.CharField(max_length=25, default="")
     jobsamples = models.ManyToManyField(JobSample)
 
     def __str__(self):
@@ -153,6 +189,7 @@ class JobReports(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, null=False, blank=False)
     filepath = models.CharField(max_length=100, null=False, blank=False)
+    reportno = models.IntegerField()
 
     def __str__(self):
         return self.name

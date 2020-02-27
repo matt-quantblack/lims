@@ -47,7 +47,11 @@
                                 <div class="card-body">
                                     <div class="card-title">
                                         <h5>Samples
-                                        <a class="btn btn-info float-md-right" href="{%  url 'listsamplesselection' refid=id %}">Edit</a></h5>
+                                            <div class=" float-md-right">
+                                                <a class="btn btn-success" href="{%  url 'listjobresults' id=id %}">Test Results</a>
+                                                <a class="btn btn-info" href="{%  url 'listsamplesselection' refid=id %}">Edit Samples</a>
+                                            </div>
+                                        </h5>
                                         <br/>
                                     </div>
 
@@ -120,20 +124,37 @@
         </div>
 
       </div>
-</div>
-    <script>
-      $(function() {
-
-          $(".dropdown-menu span").click(function () {
-
-              $("#testselect:first-child").text($(this).text());
-              $("#testselect:first-child").val($(this).attr('value'));
-
-          });
-      });
-    </script>
+    </div>
 
 
 
-});
+    <div class="card page-card">
+      <div class="card-body">
+        <div class="card-text">
+            <h3>Reports</h3>
+            <table class="table table-striped" id="reportlist">
+                <thead>
+                    <th></th>
+                    <th>Report Reference</th>
+                    <th style="width: 50%">Report Name</th>
+                    <th></th>
+                </thead>
+                <tbody>
+                    {% for r in reports %}
+                        <tr class="report" id="{{ r.id }}">
+                            <td><button type="button" class="btn btn-info download_report" reportid="{{ r.id }}">Download</button>
+                            <button type="button" class="btn btn-success email_report" reportid="{{ r.id }}">Email</button></td>
+                            <td>#{{ r.job_id }} - {{ r.reportno }}</td>
+                            <td>{{ r.name }}</td>
+                            <td><button type="button" class="btn btn-danger delete_report" reportid="{{ r.id }}">Delete</button></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+
+
+         </div>
+      </div>
+    </div>
 {% endblock %}

@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf.urls.static import static
+from django.conf import settings
 
 from . import views
 from . import api_views
@@ -10,6 +12,7 @@ urlpatterns = [
     path('list_samples', views.listsamples, name='listsamples'),
     path('<int:refid>/list_samples_selection', views.listsamplesselection, name='listsamplesselection'),
     path('list_jobs', views.listjobs, name='listjobs'),
+    path('<int:id>/list_job_results', views.listjobresults, name='listjobresults'),
     path('list_clients', views.listclients, name='listclients'),
     path('list_methods', views.listmethods, name='listmethods'),
     path('<int:clientid>/list_contacts', views.listcontacts, name='listcontacts'),
@@ -43,5 +46,11 @@ urlpatterns = [
     path('api/linkednotifcationgroups', api_views.linkednotifcationgroups, name='linkednotifcationgroups'),
     path('api/assignsamples', api_views.assignsamples, name='assignsamples'),
     path('api/addsamples', api_views.addsamples, name='addsamples'),
+    path('api/saveresults', api_views.saveresults, name='saveresults'),
+    path('api/deleteresult', api_views.deleteresult, name='deleteresult'),
+    path('api/generatereport', api_views.generatereport, name='generatereport'),
+    path('api/deletereport', api_views.deletereport, name='deletereport'),
+    path('api/downloadreport', api_views.downloadreport, name='downloadreport'),
+    path('api/emailreport', api_views.emailreport, name='emailreport'),
 
 ]

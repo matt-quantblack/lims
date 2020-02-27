@@ -9,14 +9,20 @@ from .forms import ContactForm
 from .forms import TestMethodForm
 from .forms import JobForm
 
-from .models import Sample, Clients, Contacts, TestMethods, Job, JobSample, JobReports, JobActivity, SampleTests
+from .models import *
 from .serializers import serialize_jobsample
 
 
 def dashboard(request):
+
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     return render(request, "dashboard.html")
 
 def listsamples(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     addurl = 'sample'
     apiurl = '/api/searchsamples'
@@ -25,15 +31,16 @@ def listsamples(request):
                {'name':'Client Name'},
                {'name':'Client Ref'},
                {'name':'Batch'},
-               {'name':'Sample Name', 'width': 40},
-               {'name':'Attached Reports'}]
-    renderstring = '<tr onclick="window.location.href=\'sample/{id}\'"><td>{id}</td><td>{client}</td><td>{clientref}</td><td>{batch}</td><td>{name}</td><td></td></tr>'
+               {'name':'Sample Name', 'width': 40}]
+    renderstring = '<tr onclick="window.location.href=\'sample/{id}\'"><td>{id}</td><td>{client}</td><td>{clientref}</td><td>{batch}</td><td>{name}</td></tr>'
 
     return render(request, 'lists/tablelist.html',
                   {'addurl': addurl, 'apiurl':apiurl, 'title':title, 'columns': columns,
                    'renderstring': renderstring})
 
 def listsamplesselection(request, refid):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     apiurl = '/api/searchsamples'
     title = 'Samples'
@@ -45,12 +52,23 @@ def listsamplesselection(request, refid):
                {'name':'Batch'},
                {'name':'Sample Name', 'width': 50}]
     renderstring = '<tr id="{id}"><td>{id}</td><td>{client}</td><td>{clientref}</td><td>{batch}</td><td>{name}</td></tr>'
-    print (refid)
+
+    job = Job.objects.get(id=refid)
+    selected = job.jobsamples.all()
+
+    clientname = job.client.name
+
+    samples = []
+    for jobsample in selected:
+        samples.append(serialize_jobsample(jobsample))
+
     return render(request, 'lists/selectionlist.html',
                   {'apiurl':apiurl, 'backurl': backurl, 'confirmurl': confirmurl, 'refid': refid, 'title':title, 'columns': columns,
-                   'renderstring': renderstring})
+                   'renderstring': renderstring, 'selected': samples, 'initialsearch': clientname})
 
 def listjobs(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     addurl = 'job'
     apiurl = '/api/searchjobs'
@@ -59,14 +77,48 @@ def listjobs(request):
                {'name': 'Client'},
                {'name': 'Samples', 'width': 50},
                {'name': 'Status'}]
-    renderstring = '<tr onclick="window.location.href=\'job/{id}\'"><td>{id}</td><td>{client}</td><td>{jobsamples}</td><td></td></tr>'
+    renderstring = '<tr onclick="window.location.href=\'job/{id}\'"><td>{id}</td><td>{client}</td><td>{jobsamples}</td><td>{status}</td></tr>'
 
     return render(request, 'lists/tablelist.html',
                   {'addurl': addurl, 'apiurl': apiurl, 'title': title, 'columns': columns,
                    'renderstring': renderstring})
 
+def listjobresults(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
+    results = SampleTests.objects.filter(jobsample__job__id=id).order_by('test__name').all()
+    officers = Users.objects.all()
+    locations = Locations.objects.all()
+
+    reporttypes = ReportTypes.objects.filter(testmethods__sampletests__jobsample__job__id=id).distinct()
+
+    reports = JobReports.objects.filter(job_id=id).all()
+
+    defaults = {
+        'officer': officers.first(),
+        'location': locations.first(),
+        'report': reporttypes.first()
+    }
+
+    renderstring = '<tr><td><button type="button" class="btn btn-info download_report" reportid="{id}">Download\
+    </button><button type="button" class="btn btn-success email_report" reportid="{id}">Email\
+    </button></td><td>#{job} - {reportno}</td><td>{name}</td><td><button type="button" \
+    class="btn btn-danger delete_report" reportid="{id}">Delete</button></td></tr>'
+
+    return render(request, 'lists/jobresultslist.html', {'results': results,
+                                                         'officers': officers,
+                                                         'locations': locations,
+                                                         'reporttypes': reporttypes,
+                                                         'reports': reports,
+                                                         'default': defaults,
+                                                         'jobid': id,
+                                                         'renderstring': renderstring,
+                                                         'backurl': '/job/{}'.format(id)})
 
 def listclients(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     addurl = 'client'
     apiurl = '/api/searchclients'
@@ -79,6 +131,8 @@ def listclients(request):
                    'renderstring': renderstring})
 
 def listmethods(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     addurl = 'method'
     apiurl = '/api/searchmethods'
@@ -91,6 +145,9 @@ def listmethods(request):
                    'renderstring': renderstring})
 
 def listcontacts(request, clientid):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     addurl = '/{}/contact'.format(clientid)
     apiurl = '/api/searchcontacts'
     title = 'Contacts'
@@ -106,6 +163,8 @@ def listcontacts(request, clientid):
 
 
 def updatesampleform(request, sampleid):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     sample = Sample.objects.get(id=sampleid)
     sampleform = SampleForm(request.POST or None, instance=sample)
@@ -117,6 +176,9 @@ def updatesampleform(request, sampleid):
     return render(request, 'forms/sampleform.html', {"sampleform": sampleform, "id": sample.id})
 
 def insertnewsample(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     sampleform = SampleForm(request.POST or None)
 
     # save the form and redirect to the update sample page
@@ -128,6 +190,9 @@ def insertnewsample(request):
     return None
 
 def sampleform(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     # create the sampleForm object from the posted form data
     if request.method == 'POST':
         sample = insertnewsample(request)
@@ -140,6 +205,9 @@ def sampleform(request):
 
 
 def copysampleform(request, sampleid):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     if request.method == 'POST':
         sample = insertnewsample(request)
         return redirect('/sample/{}'.format(sample.id))
@@ -151,11 +219,17 @@ def copysampleform(request, sampleid):
     return render(request, 'forms/sampleform.html', {"sampleform": sampleform})
 
 def removesample(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     Sample.objects.filter(id=id).delete()
     return redirect('/list_samples')
 
 
 def insertnewclient(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     form = ClientForm(request.POST or None)
 
     # save the form and redirect to the update sample page
@@ -167,6 +241,8 @@ def insertnewclient(request):
     return None
 
 def updateclientform(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     item = Clients.objects.get(id=id)
     contacts = Contacts.objects.filter(client=id)
@@ -182,6 +258,9 @@ def updateclientform(request, id):
 
 
 def clientform(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     # create the sampleForm object from the posted form data
     if request.method == 'POST':
         item = insertnewclient(request)
@@ -193,6 +272,9 @@ def clientform(request):
     return render(request, 'forms/clientform.html', {"form": form})
 
 def removeclient(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     Clients.objects.filter(id=id).delete()
     return redirect('/list_clients')
 
@@ -200,6 +282,9 @@ def removeclient(request, id):
 ##############################################################################################
 
 def insertnewjob(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     form = JobForm(request.POST or None)
 
     # save the form and redirect to the update sample page
@@ -211,6 +296,8 @@ def insertnewjob(request):
     return None
 
 def updatejobform(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     item = Job.objects.get(id=id)
     samples = JobSample.objects.filter(job=id)
@@ -235,6 +322,9 @@ def updatejobform(request, id):
 
 
 def jobform(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     # create the sampleForm object from the posted form data
     if request.method == 'POST':
         item = insertnewjob(request)
@@ -246,6 +336,9 @@ def jobform(request):
     return render(request, 'forms/jobform.html', {"form": form})
 
 def removejob(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     Job.objects.filter(id=id).delete()
     return redirect('/list_jobs')
 
@@ -253,6 +346,9 @@ def removejob(request, id):
 
 
 def insertnewmethod(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     form = TestMethodForm(request.POST or None)
 
     # save the form and redirect to the update sample page
@@ -264,6 +360,8 @@ def insertnewmethod(request):
     return None
 
 def updatemethodform(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     item = TestMethods.objects.get(id=id)
 
@@ -278,6 +376,9 @@ def updatemethodform(request, id):
 
 
 def methodform(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     # create the sampleForm object from the posted form data
     if request.method == 'POST':
         item = insertnewmethod(request)
@@ -302,12 +403,17 @@ def methodform(request):
     return render(request, 'forms/methodform.html', {"form": form})
 
 def removemethod(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     TestMethods.objects.filter(id=id).delete()
     return redirect('/list_methods')
 
 #############################################################################################
 
 def insertnewcontact(request, clientid):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     print(request.POST)
     form = ContactForm(request.POST or None)
@@ -323,6 +429,8 @@ def insertnewcontact(request, clientid):
 
 
 def updatecontactform(request, clientid, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
 
     item = Contacts.objects.get(id=id)
 
@@ -337,6 +445,9 @@ def updatecontactform(request, clientid, id):
 
 
 def contactform(request, clientid):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     # create the sampleForm object from the posted form data
     if request.method == 'POST':
         item = insertnewcontact(request, clientid)
@@ -351,5 +462,8 @@ def contactform(request, clientid):
     return render(request, 'forms/contactform.html', {"form": form, "clientid": clientid})
 
 def removecontact(request, clientid, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
     Contacts.objects.filter(id=id).delete()
     return redirect('/{}/list_contacts'.format(clientid))

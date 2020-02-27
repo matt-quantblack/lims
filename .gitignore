@@ -1,10 +1,13 @@
 #user specific
 .idea
 /venv/
+./eldashboard/reports
 TODO.txt
 
 #confidential
 /secrets.json
+./eldashboard/credentials.json
+
 
 #python
 __pycache__/
