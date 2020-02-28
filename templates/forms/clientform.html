@@ -5,6 +5,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+    <input id="renderstring" type="hidden" value="{{ renderstring }}">
     <div class="card page-card">
       <div class="card-body">
         <h5 class="card-title">
@@ -68,6 +69,50 @@
                                                     {% endfor %}
                                                 </tbody>
                                             </table>
+
+                                            <br/>
+                                            <table style="width: 100%">
+                                                <tr>
+                                                    <td>
+                                                        <h5>Notification Groups</h5>
+                                                    </td>
+                                                    <td>
+                                                        <div class="float-md-right">
+                                                            <div class="input-group mb-3">
+                                                              <input id="ng_name" type="text" class="form-control" value="{{ form.name.value }}">
+                                                              <div class="input-group-append">
+                                                                <button id="add_ng" class="btn btn-success" clientid="{{ id }}" type="button">Add</button>
+                                                              </div>
+                                                            </div>
+
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <br/>
+                                            <table class="table table-striped" id="nglist">
+                                                <thead>
+                                                    <th>Name</th>
+                                                    <th>Email List</th>
+                                                    <th></th>
+                                                </thead>
+                                                <tbody class="ng_list clickable">
+                                                    {% for ng in notificationgroups %}
+                                                        <tr><td>{{ ng.name }}</td>
+                                                            <td>{% for c in ng.contacts.all %}
+                                                                {{ c.email }}<br/>
+                                                                {%  endfor %}
+                                                            </td>
+                                                        <td>
+                                                            <div class="float-right">
+                                                                <a href="{% url 'listcontactsselection' refid=ng.id clientid=id %}" id="edit_ng" class="btn btn-info">Edit</a>
+                                                                <button ngid="{{ ng.id }}" class="btn btn-danger delete_ng">X</button>
+                                                            </div>
+
+                                                        </td></tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
                                         {% else %}
                                             No contacts.
                                         {%  endif %}
@@ -90,7 +135,7 @@
         </div>
 
       </div>
-</div>
+    </div>
 
 
 {% endblock %}

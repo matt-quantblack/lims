@@ -18,7 +18,26 @@ def dashboard(request):
     if request.user.is_authenticated == False:
         return redirect('/login')
 
-    return render(request, "dashboard.html")
+    newsamples = Sample.objects.filter(notified=False)
+    activejobs = Job.objects.filter(status='Open').all()
+    jobstoinvoice = Job.objects.filter(status='Sent').all()
+    inner_qs = JobSample.objects.values_list('sample_id', flat=True)
+    unassignedsamples = Sample.objects.exclude(id__in=inner_qs)
+
+    for j in activejobs:
+        tests = []
+        for js in j.jobsamples.all():
+            matchedtests = SampleTests.objects.filter(jobsample_id=js.id).all()
+            for t in matchedtests:
+                if t.test.name not in tests:
+                    tests.append(t.test.name)
+        j.tests = tests
+
+    for j in activejobs:
+        print(j.tests)
+
+    return render(request, "dashboard.html", {'newsamples': newsamples, 'activejobs': activejobs,
+                                              'jobstoinvoice':jobstoinvoice, 'unassignedsamples': unassignedsamples})
 
 def listsamples(request):
     if request.user.is_authenticated == False:
@@ -64,7 +83,7 @@ def listsamplesselection(request, refid):
 
     return render(request, 'lists/selectionlist.html',
                   {'apiurl':apiurl, 'backurl': backurl, 'confirmurl': confirmurl, 'refid': refid, 'title':title, 'columns': columns,
-                   'renderstring': renderstring, 'selected': samples, 'initialsearch': clientname})
+                   'renderstring': renderstring, 'selected': samples, 'initialsearch': clientname, 'initialresults': None})
 
 def listjobs(request):
     if request.user.is_authenticated == False:
@@ -161,6 +180,32 @@ def listcontacts(request, clientid):
                   {'addurl': addurl, 'apiurl': apiurl, 'title': title, 'columns': columns,
                    'renderstring': renderstring, "refid": clientid, "backurl": "/client/{}".format(clientid)})
 
+def listcontactsselection(request, refid, clientid):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
+    title = 'Contacts'
+    confirmurl = '/api/addcontacts'
+    backurl = "/client/{}".format(clientid)
+    columns = [{'name':'First Name'},
+               {'name':'Last Name'},
+               {'name':'Email'},]
+
+    ng = NotificationGroups.objects.get(id=refid)
+    selected = ng.contacts.all()
+
+    results = Contacts.objects.filter(client_id=clientid).all()
+
+    results = [x for x in results if x not in selected]
+
+    contacts = []
+    for contact in selected:
+        contacts.append({'firstname': contact.firstname, 'lastname': contact.lastname, 'email': contact.email})
+
+    return render(request, 'lists/contactselectionlist.html',
+                  {'backurl': backurl, 'confirmurl': confirmurl, 'refid': refid, 'title':title, 'columns': columns,
+                   'selected': contacts, 'initialresults': results})
+
 
 def updatesampleform(request, sampleid):
     if request.user.is_authenticated == False:
@@ -253,8 +298,21 @@ def updateclientform(request, id):
             form.save()
             return redirect('/list_clients')
 
+    ngs = NotificationGroups.objects.prefetch_related('contacts').filter(client_id=id).all()
 
-    return render(request, 'forms/clientform.html', {"form": form, "contacts": contacts, "id": item.id})
+    renderstring = """<tr><td>{name}</td>
+                            <td>{contacts}
+                            </td>
+                        <td>
+                            <div class="float-right">
+                                <a href="/{id}/list_contacts_selection/{client}" id="edit_ng" class="btn btn-info">Edit</a>
+                                <button ngid="{id}" class="btn btn-danger delete_ng">X</button>
+                            </div>
+
+                        </td></tr>"""
+
+    return render(request, 'forms/clientform.html', {"form": form, "contacts": contacts, "notificationgroups": ngs,
+                                                     "renderstring": renderstring, "id": item.id})
 
 
 def clientform(request):

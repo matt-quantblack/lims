@@ -253,7 +253,12 @@ def emailreport(request):
     Don't hesitate to contact us if you have any questions.
     
     Best Regards,
-    The Enzyme Labs Team""".format(companyname)
+    The Enzyme Labs Team
+    
+    U15/168 Victoria Rd
+    Marrickville
+    NSW 2204
+    Australia""".format(companyname)
 
     success, error = send_email(emails, ("team@enzymelabs.com.au", "Enzyme Labs"), "Test Report from Enzyme Labs",
                                 emailtext.replace("\n", "<br/>"),
@@ -271,8 +276,61 @@ def emailreport(request):
     else:
         return JsonResponse({'error': 'Failed to send email: {}'.format(error)})
 
+def uploadreport(request):
 
+    reportname = request.POST.get('reportname', 'Test Report')
+    jobid = int(request.POST.get('jobid', None))
+    upfile = request.FILES.get('file', None)
 
+    if upfile is None:
+        return JsonResponse({'error': 'Report file needs to be submitted.'})
+
+    if request.method == 'POST':
+
+        try:
+            # get the report number count
+            reportno = 1
+            maxno = JobReports.objects.filter(job_id=jobid).aggregate(Max('reportno'))
+            if maxno["reportno__max"] is not None:
+                reportno = maxno["reportno__max"] + 1
+
+            fs = FileSystemStorage()
+            filepath = './eldashboard/reports/{}'.format(reportname, jobid, reportno)
+            fs.save(filepath, upfile)
+
+            report = JobReports.objects.create(job_id=jobid, name=reportname, filepath=filepath, reportno=reportno)
+            report.save()
+
+        except Exception as e:
+            return JsonResponse({'error': 'Could not save file {}'.format(e)})
+
+        context = {
+            'data': [JobReportSerializer(report).data],
+            'more': False
+        }
+
+        return JsonResponse(context)
+
+    return JsonResponse({'error': 'Wrong method, use POST.'})
+
+def markinvoiced(request):
+    if request.user.is_authenticated == False:
+        return JsonResponse({'error': 'forbidden'})
+
+    #get the client id from the request and convert to an int
+    jobid = request.GET.get('jobid', None)
+    invoiceno = request.GET.get('invoice', 'Not provided')
+
+    try:
+        job = Job.objects.get(id=jobid)
+        job.invoiceno = invoiceno
+        job.status = "Complete"
+        job.save()
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': 'Could not delete {}'.format(e)})
+
+    return JsonResponse({'success': True})
 
 def linkednotifcationgroups(request):
 
@@ -286,12 +344,177 @@ def linkednotifcationgroups(request):
     else:
         client_id = -1
 
-    results = NotificationGroups.objects.filter(contacts__client_id=client_id)
+    results = NotificationGroups.objects.filter(client_id=client_id)
 
     # format queryset into json for returning
     serializer = DropDownSerializer(results, many=True)
 
     return JsonResponse(serializer.data, safe=False)
+
+def removenotif(request):
+
+    if request.user.is_authenticated == False:
+        return JsonResponse({'error': 'forbidden'})
+
+    try:
+        #get the id from the request and convert to an int
+        id = int(request.GET.get('id', None))
+
+        #update the sample
+        sample = Sample.objects.get(id=id)
+        sample.notified = True
+        sample.save()
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': 'Could not delete {}'.format(e)})
+
+    return JsonResponse({'success': True})
+
+def sendnotif(request):
+
+    if request.user.is_authenticated == False:
+        return JsonResponse({'error': 'forbidden'})
+
+    newsamples = Sample.objects.filter(notified=False).all()
+
+    emailsToSend = {}
+
+    #first compile a list of all the samples for each contact
+    #(may be multiple samples to same contact so want only one email"
+    for sample in newsamples:
+        sample.notified = True
+        sample.save()
+
+        emails = []
+        for contact in sample.notificationgroup.contacts.all():
+            if contact.id not in emailsToSend:
+                emailsToSend[contact.id] = {'contact': contact, 'samples': []}
+
+            emailsToSend[contact.id]['samples'].append(sample)
+
+    errors = ""
+    for id in emailsToSend:
+        info = emailsToSend[id]
+        contact = info['contact']
+        emails.append((contact.email, '{} {}'.format(contact.firstname, contact.lastname)))
+
+        emailtext = """Hi {},
+    
+            The following samples have been received by Enzyme Labs: \n\n""".format(contact.firstname)
+
+        for sample in info['samples']:
+            emailtext += "#{} - Name:{}, Batch:{}, ClientRef: {}\n".format(sample.id,
+                                                                         sample.name,
+                                                                         sample.batch,
+                                                                         sample.clientref)
+
+        emailtext += """
+    
+            If there are any issues please don't hesitate to contact us.
+    
+            Best Regards,
+            The Enzyme Labs Team
+            
+            U15/168 Victoria Rd
+            Marrickville
+            NSW 2204
+            Australia"""
+
+        success, error = send_email(emails, ("team@enzymelabs.com.au", "Enzyme Labs"), "Sample Received from Enzyme Labs",
+                                    emailtext.replace("\n", "<br/>"),
+                                    emailtext,
+                                    bcc="info@enzymelabs.com.au")
+        if success == False:
+            errors += "{}: {},".format(contact.email, error)
+
+
+
+        if len(errors) > 0:
+            return JsonResponse({'success': False, 'error': 'Could not send: {}'.format(errors)})
+
+    return JsonResponse({'success': True})
+
+def addng(request):
+
+    if request.user.is_authenticated == False:
+        return JsonResponse({'error': 'forbidden'})
+
+    name = request.GET.get('name', None)
+    clientid = int(request.GET.get('clientid', None))
+
+    ng = NotificationGroups.objects.create(name=name, client_id=clientid)
+    ng.save()
+
+    context = {
+        'data': [NotificationGroupSerializer(ng).data],
+        'more': False
+    }
+
+    return JsonResponse(context)
+
+
+def removeng(request):
+    if request.user.is_authenticated == False:
+        return JsonResponse({'error': 'forbidden'})
+
+    ngid = int(request.GET.get('ngid', None))
+
+    try:
+        ng = NotificationGroups.objects.get(id=ngid)
+        ng.delete()
+    except Exception as e:
+        return JsonResponse({'success': False ,'error': 'Could not delete {}'.format(e)})
+
+    return JsonResponse({'success': True})
+
+def addcontacts(request):
+    if request.user.is_authenticated == False:
+        return JsonResponse({'error': 'forbidden'})
+
+    ng_id = request.GET.get('refid', None)
+    contact_ids = request.GET.get('ids', None)
+
+    if ng_id.isnumeric():
+
+        #get the ng id as an int
+        ng_id = int(ng_id)
+
+        #get the sample ids as a list
+        selected = contact_ids.split(',')
+
+        #get the current job list of jobsamples
+        #because we needs to sync current job samples with the posted sample ids
+        ng = NotificationGroups.objects.get(id=ng_id)
+        currentcontacts = ng.contacts.all()
+
+        #make a list of current ids to make it easier to check in the next loop
+        currentids = []
+        for s in currentcontacts:
+            currentids.append(s.id)
+
+        #go through each id that was posted and add it to the job only if it isn't already in the job
+        for id in selected:
+            if id.isnumeric():
+                id = int(id)
+
+                #only add if not in the job
+                if id not in currentids:
+                    contact = Contacts.objects.get(id=id)
+                    ng.contacts.add(contact)
+
+        #now delete any from the job that weren't in the posted list of ids
+        for s in currentcontacts:
+            if str(s.id) not in selected:
+                ng.contacts.remove(s)
+
+        #save the job to save the relationship of jobsamples and job in the job_jobsamples table
+        ng.save()
+
+
+    else:
+        return JsonResponse({'success': False, 'error': 'Id not valid number.'})
+
+    return JsonResponse({'success': True})
+
 
 def addsamples(request):
     if request.user.is_authenticated == False:

@@ -5,11 +5,115 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-    <div class="card page-card">
-      <div class="card-body">
-        <div class="card-text">
-            Not Yet Implemented
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card page-card">
+                <div class="card-header">
+                    Active Jobs
+                </div>
+
+                <div class="card-body">
+                    <div class="card-text">
+                        <table class="table table-striped table-hover" id="activejobs_table">
+                            <tbody>
+                                {% for job in activejobs %}
+                                    <tr class="clickable" onclick="window.location='/job/{{ job.id }}'">
+                                    <td>
+                                        {{ job.id }}<br/>
+                                        {{ job.jobsamples.all|length }} samples
+                                    </td>
+                                    <td>
+                                        {{ job.client.name }}<br/>
+                                        <ul>
+                                            {% for test in job.tests %}
+                                                <li>{{ test }}</li>
+                                            {%  endfor %}
+                                        </ul>
+
+                                    </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+        <div class="col-md-4">
+            <div class="card page-card">
+                <div class="card-header">
+                    New Sample Receipts
+                    <button id="send_notifs" class="btn btn-info float-md-right">Send Notifications</button>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-text">
+                    <table class="table table-striped table-hover" id="notif_table">
+                        <tbody>
+                            {% for sample in newsamples %}
+                                <tr class="notif_sample clickable" sampleid="{{ sample.id }}" onclick="window.location='/sample/{{ sample.id }}'">
+                                    <td>#{{ sample.id }}</td>
+                                    <td>{{ sample.name }}</td>
+                                    <td><button class="btn btn-danger remove_notif float-right" sampleid="{{ sample.id }}">X</button></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="card page-card">
+                <div class="card-header">
+                    Jobs to Invoice
+                </div>
+
+                <div class="card-body">
+                    <div class="card-text">
+                        <table class="table table-striped table-hover" id="invoicejobs_table">
+                            <tbody>
+                                {% for job in jobstoinvoice %}
+                                    <tr class="jobitem clickable" onclick="window.location='/job/{{ job.id }}'">
+                                    <td>#{{ job.id }}</td>
+                                    <td>{{ job.client }}<br/>
+                                        <div class="input-group mb-3">
+                                          <input type="text" class="form-control invoiceno" placeholder="Invoice number">
+                                          <div class="input-group-append">
+                                            <button class="btn btn-success markinvoiced" jobid="{{ job.id }}" type="button">Mark Invoiced</button>
+                                          </div>
+                                        </div>
+                                    </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card page-card">
+                <div class="card-header">
+                    Unassigned Samples
+                </div>
+
+                <div class="card-body">
+                    <div class="card-text">
+                        <table class="table table-striped table-hover" id="notif_table">
+                        <tbody>
+                            {% for sample in unassignedsamples %}
+                                <tr class="un_sample clickable" sampleid="{{ sample.id }}" onclick="window.location='/sample/{{ sample.id }}'">
+                                    <td>#{{ sample.id }}</td>
+                                    <td>{{ sample.name }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
 {% endblock %}

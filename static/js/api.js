@@ -87,6 +87,54 @@ $(function () {
        send_api_request(apiurl,{ 'ids': ids, 'refid':refid}, function() { window.location.replace(backurl) });
     });
 
+    $("#send_notifs").click(function(e) {
+        button = $(this);
+        button.attr('disabled', true);
+
+         send_api_request('/api/sendnotif',{}, function(data) {
+            button.attr('disabled', false);
+            if(data.hasOwnProperty("error"))
+                alert(data["error"]);
+            else
+                $("#notif_table tr").remove();
+        });
+    });
+
+    $(".remove_notif").click(function(e) {
+        id = $(this).attr('sampleid');
+        row = $(this).parent().parent();
+        send_api_request('/api/removenotif',{ 'id': id}, function(data) {
+
+            if(data.hasOwnProperty("error"))
+                alert(data["error"]);
+            else
+                row.remove();
+        });
+
+        e.stopPropagation();
+
+    });
+
+    $(".invoiceno").click(function(e) {
+        e.stopPropagation();
+    });
+
+    $(".markinvoiced").click(function(e) {
+        id = $(this).attr('jobid');
+        invoiceno = $(this).parent().parent().find(".invoiceno").val()
+        row = $(this).parent().parent().parent().parent();
+        send_api_request('/api/markinvoiced',{ 'jobid': id, 'invoiceno': invoiceno}, function(data) {
+
+            if(data.hasOwnProperty("error"))
+                alert(data["error"]);
+            else
+                row.remove();
+        });
+
+        e.stopPropagation();
+
+    });
+
     $(".delete_result").click(function() {
         $(this).attr('disabled', true);
         id = $(this).attr('testid');
@@ -174,6 +222,58 @@ $(function () {
             else
                 button.text("Email Failed!");
         });
+    });
+
+    $("#upload_report").click(function() {
+        button = $(this);
+        button.attr('disabled', true);
+        render_string = $("#renderstring").val();
+        var data = new FormData($('form').get(0));
+        $.ajax({
+            url: '/api/uploadreport',
+            type: 'POST',
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                button.attr('disabled', false);
+                if(data.hasOwnProperty("error"))
+                    alert(data["error"]);
+                else
+                    render_list('#reportlist tbody', data, render_string, false);
+            }
+        });
+    });
+
+    $("#nglist tbody").on('click', '.delete_ng', function() {
+        button = $(this);
+        button.attr('disabled', true);
+        id = $(this).attr('ngid');
+        row = $(this).parent().parent().parent();
+        send_api_request('/api/removeng', {'ngid': id}, function (data) {
+            button.attr('disabled', false);
+            if(data["success"] == true)
+                row.remove();
+            else
+               alert(data["error"]);
+        });
+    });
+
+    $("#add_ng").click(function() {
+        button = $(this);
+        button.attr('disabled', true);
+        render_string = $("#renderstring").val();
+        id = $(this).attr('clientid');
+        name = $("#ng_name").val()
+
+        send_api_request('/api/addng', {'clientid': id, 'name':name}, function (data) {
+                button.attr('disabled', false);
+                if(data.hasOwnProperty("error"))
+                    alert(data["error"]);
+                else
+                    render_list('#nglist tbody', data, render_string, false);
+            });
     });
 
     $("#add_items").click(function(){

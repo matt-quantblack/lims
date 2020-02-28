@@ -5,35 +5,12 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-    <input id="apiurl" type="hidden" value="{{ apiurl }}">
     <input id="confirmurl" type="hidden" value="{{ confirmurl }}">
     <input id="backurl" type="hidden" value="{{ backurl }}">
     <input id="refid" type="hidden" value="{{ refid }}">
     <input id="renderstring" type="hidden" value="{{ renderstring }}">
 
-    {%  if apiurl %}
-    <div class="card page-card">
-      <div class="card-body">
-        <div class="card-text">
-            <div class="row">
-                <div class="col-md-6">
-                    {% if backurl %}
-                    <a class="btn btn-info" href="{{ backurl }}">Back</a>
-                    {% endif %}
-                </div>
-                <div class="col-md-6">
-                   <div class="input-group mb-3">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text" id="basic-addon1">Search</span>
-                      </div>
-                      <input id="search-input" type="text" class="form-control" placeholder="Search" value="{{ initialsearch }}">
-                    </div>
-                </div>
-            </div>
-        </div>
-      </div>
-    </div>
-    {% endif %}
+
     <div class="row">
         <div class="col-md-5">
             <div class="card page-card">
@@ -41,7 +18,7 @@
                 <h5 class="card-title">
                     {{ title }}
                 </h5>
-                <div class="card-text" id="table-card" style="display: none">
+                <div class="card-text" id="table-card">
                     <table class="table table-striped table-hover" id="item_list">
                         <thead>
                             <tr>
@@ -53,23 +30,16 @@
                         <tbody class="clickable selection_table">
                         {% if initialresults %}
                             {% for result in initialresults %}
+                                <tr id="{{ result.id }}">
                                 <td>{{ result.firstname }}</td>
                                 <td>{{ result.lastname }}</td>
                                 <td>{{ result.email }}</td>
+                                </tr>
                             {% endfor %}
                         {% endif %}
                         </tbody>
                     </table>
-                    <a class="search-items-more more-pages" page="2">More ...</a>
-
                 </div>
-                <div class="card-text" id="table-card-none" style="display: none">
-                    No items.
-                </div>
-                <div class="card-text" id="table-card-load">
-                  Loading items...
-                </div>
-
               </div>
             </div>
         </div>
@@ -94,12 +64,10 @@
                         </thead>
                         <tbody class="clickable selection_table" id="selected_table">
                             {% for item in selected %}
-                                <tr id="{{ item.sample.id }}">
-                                    <td>{{ item.sample.id }}</td>
-                                    <td>{{ item.sample.client }}</td>
-                                    <td>{{ item.sample.clientref }}</td>
-                                    <td>{{ item.sample.batch }}</td>
-                                    <td>{{ item.sample.name }}</td>
+                                <tr id="{{ item.id}}">
+                                    <td>{{ item.firstname }}</td>
+                                    <td>{{ item.lastname }}</td>
+                                    <td>{{ item.email }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

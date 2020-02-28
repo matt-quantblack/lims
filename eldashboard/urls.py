@@ -37,6 +37,7 @@ urlpatterns = [
     path('<int:clientid>/contact/<int:id>', views.updatecontactform, name='updatecontactform'),
     path('<int:clientid>/contact', views.contactform, name='contactform'),
     path('<int:clientid>/removecontact/<int:id>', views.removecontact, name='removecontact'),
+    path('<int:refid>/list_contacts_selection/<int:clientid>', views.listcontactsselection, name='listcontactsselection'),
 
     path('api/searchsamples', api_views.searchsamples, name='searchsamples'),
     path('api/searchjobs', api_views.searchjobs, name='searchjobs'),
@@ -52,5 +53,12 @@ urlpatterns = [
     path('api/deletereport', api_views.deletereport, name='deletereport'),
     path('api/downloadreport', api_views.downloadreport, name='downloadreport'),
     path('api/emailreport', api_views.emailreport, name='emailreport'),
+    path('api/uploadreport', api_views.uploadreport, name='uploadreport'),
+    path('api/addng', api_views.addng, name='addng'),
+    path('api/removeng', api_views.removeng, name='removeng'),
+    path('api/addcontacts', api_views.addcontacts, name='addcontacts'),
+    path('api/removenotif', api_views.removenotif, name='removenotif'),
+    path('api/sendnotif', api_views.sendnotif, name='sendnotif'),
+    path('api/markinvoiced', api_views.markinvoiced, name='markinvoiced'),
 
 ]

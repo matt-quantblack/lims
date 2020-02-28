@@ -16,33 +16,81 @@
                 </div>
                 <div class="col-md-6">
                     <div class="float-right">
+                    <form method="POST">
+                    {% csrf_token %}
                     <table>
                         <tr>
                             <td style="padding-right: 25px">
-                                <h2 id="unsaved" class="text-danger" style="display: none">UNSAVED CHANGES</h2>
+
+                                            <h2 id="unsaved" class="text-danger" style="display: none">UNSAVED CHANGES</h2>
+
                             </td>
                             <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle officer-input" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                                        value="{{ default.report.id }}" id="report_type">{{ default.report}}</button>
-                                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                      {% for r in reporttypes %}
-                                        <span class="dropdown-item" value="{{ r.id}}">{{r}}</span>
-                                      {% endfor %}
+                                <div class="card page-card">
+                                      <div class="card-body">
+                                        <div class="card-text">
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-secondary dropdown-toggle officer-input" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                                value="{{ default.report.id }}" id="report_type">{{ default.report}}</button>
+                                                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                              {% for r in reporttypes %}
+                                                                <span class="dropdown-item" value="{{ r.id}}">{{r}}</span>
+                                                              {% endfor %}
+                                                          </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <input name="reportname" style="width:250px" class="form-control" id="reportname-input" value="Test Report"/>
+                                                    </td>
+                                                    <td>
+                                                        <span class="btn btn-primary" id="generate_report" jobid="{{ jobid }}">Generate Report</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                      </div>
+                                </div>
+
+                            </td>
+
+                            <td>
+                                <div class="card page-card">
+                                  <div class="card-body">
+                                    <div class="card-text">
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <span class="btn btn-primary" id="upload_report">Attach Report</span>
+                                                </td>
+                                                <td>
+
+
+                                                        <input type="hidden" name="jobid" value="{{ jobid }}"/>
+                                                        <input type="file" name="file" id="attach-file"/>
+
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
                                   </div>
                                 </div>
+
                             </td>
                             <td>
-                                <input class="form-control" id="reportname-input" value="Test Report"/>
-                            </td>
-                            <td>
-                                <span class="btn btn-primary" id="generate_report" jobid="{{ jobid }}">Generate Report</span>
-                            </td>
-                            <td>
-                                <button type="button" id="save_results" class="btn btn-success">Save Results</button>
+                                <div class="card page-card">
+                                      <div class="card-body">
+                                        <div class="card-text">
+                                            <button type="button" id="save_results" class="btn btn-success">Save Results</button>
+                                        </div>
+                                      </div>
+                                </div>
                             </td>
                         </tr>
                     </table>
+                    </form>
                     </div>
 
                 </div>

@@ -15,6 +15,7 @@ class SampleForm(forms.ModelForm):
       input_formats=(settings.DATE_INPUT_FORMATS[0],)
    )
 
+   client = forms.ModelChoiceField(queryset=Clients.objects.order_by('name'))
 
    class Meta:
       model = Sample
@@ -49,6 +50,8 @@ class TestMethodForm(forms.ModelForm):
          'tmnumber': 'TM #',
          'reporttype': 'Report Type'
       }
+
+
 
 class ContactForm(forms.ModelForm):
 

@@ -62,8 +62,8 @@ class PDF(FPDF):
 def generate_report(data, outpath):
     pdf = PDF(data)
     # for each sample add a page
-    col1 = 29
-    col2 = 68
+    col1 = 32
+    col2 = 62
     col3 = col1
     col4 = col2 + 1
     cell_height = 6
@@ -73,41 +73,116 @@ def generate_report(data, outpath):
         # sample details
         pdf.ln(cell_height)
 
-        pdf.set_font("Arial", "B", size=12)
-        pdf.cell(col1, cell_height, "Sample:", align="L", border=1)
-        pdf.set_font("Arial", size=12)
-        pdf.cell(col2, cell_height, sample["fields"]["Sample_Name"], align="L", border=1)
-        pdf.set_font("Arial", "B", size=12)
-        pdf.cell(col3, cell_height, "Condition:", align="L", border=1)
-        pdf.set_font("Arial", size=12)
-        pdf.cell(col4, cell_height, sample["fields"]["Sample_Condition"], align="L", border=1, ln=1)
+        y = pdf.get_y()
+        x = pdf.get_x()
 
+        #ROW 1
+        height = 0
+        pdf.set_xy(x, y)
         pdf.set_font("Arial", "B", size=12)
-        pdf.cell(col1, cell_height, "Client Ref:", align="L", border=1)
+        pdf.multi_cell(col1, cell_height, "Sample:", align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_xy(x + col1, y)
         pdf.set_font("Arial", size=12)
-        pdf.cell(col2, cell_height, sample["fields"]["Sample_ClientRef"], align="L", border=1)
+        pdf.multi_cell(col2, cell_height, sample["fields"]["Sample_Name"], align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_xy(x + col1 + col2, y)
         pdf.set_font("Arial", "B", size=12)
-        pdf.cell(col3, cell_height, "Description:", align="L", border=1)
+        pdf.multi_cell(col3, cell_height, "Condition:", align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_font("Arial", size=8)
+        pdf.set_xy(x + col1 + col2 + col3, y)
         pdf.set_font("Arial", size=12)
-        pdf.cell(col4, cell_height, sample["fields"]["Sample_Description"], align="L", border=1, ln=1)
+        pdf.multi_cell(col4, cell_height, sample["fields"]["Sample_Condition"], align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
 
-        pdf.set_font("Arial", "B", size=12)
-        pdf.cell(col1, cell_height, "Batch:", align="L", border=1)
-        pdf.set_font("Arial", size=12)
-        pdf.cell(col2, cell_height, sample["fields"]["Sample_Batch"], align="L", border=1)
-        pdf.set_font("Arial", "B", size=12)
-        pdf.cell(col3, cell_height, "Receipt Date:", align="L", border=1)
-        pdf.set_font("Arial", size=12)
-        pdf.cell(col4, cell_height, sample["fields"]["Sample_Received"], align="L", border=1, ln=1)
+        pdf.rect(x, y, col1, height)
+        pdf.rect(x + col1, y, col2, height)
+        pdf.rect(x + col1 + col2, y, col3, height)
+        pdf.rect(x + col1 + col2 + col3, y, col4, height)
 
+        y = y + height
+
+        # ROW 2
+        height = 0
+        pdf.set_xy(x, y)
         pdf.set_font("Arial", "B", size=12)
-        pdf.cell(col1, cell_height, "EL Ref:", align="L", border=1)
+        pdf.multi_cell(col1, cell_height, "Client Ref:", align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_xy(x + col1, y)
         pdf.set_font("Arial", size=12)
-        pdf.cell(col2, cell_height, "# {}".format(sample["fields"]["Sample_Id"]), align="L", border=1)
+        pdf.multi_cell(col2, cell_height, sample["fields"]["Sample_ClientRef"], align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_xy(x + col1 + col2, y)
         pdf.set_font("Arial", "B", size=12)
-        pdf.cell(col3, cell_height, "Job Number:", align="L", border=1)
+        pdf.multi_cell(col3, cell_height, "Description:", align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_font("Arial", size=8)
+        pdf.set_xy(x + col1 + col2 + col3, y)
         pdf.set_font("Arial", size=12)
-        pdf.cell(col4, cell_height, data["header_fields"]["Job_Id"], align="L", border=1, ln=1)
+        pdf.multi_cell(col4, cell_height,  sample["fields"]["Sample_Description"], align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+
+        pdf.rect(x, y, col1, height)
+        pdf.rect(x + col1, y, col2, height)
+        pdf.rect(x + col1 + col2, y, col3, height)
+        pdf.rect(x + col1 + col2 + col3, y, col4, height)
+
+        y = y + height
+
+        # ROW 3
+        height = 0
+        pdf.set_xy(x, y)
+        pdf.set_font("Arial", "B", size=12)
+        pdf.multi_cell(col1, cell_height, "Batch:", align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_xy(x + col1, y)
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(col2, cell_height, sample["fields"]["Sample_Batch"], align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_xy(x + col1 + col2, y)
+        pdf.set_font("Arial", "B", size=12)
+        pdf.multi_cell(col3, cell_height, "Receipt Date:", align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_font("Arial", size=8)
+        pdf.set_xy(x + col1 + col2 + col3, y)
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(col4, cell_height, sample["fields"]["Sample_Received"], align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+
+        pdf.rect(x, y, col1, height)
+        pdf.rect(x + col1, y, col2, height)
+        pdf.rect(x + col1 + col2, y, col3, height)
+        pdf.rect(x + col1 + col2 + col3, y, col4, height)
+
+        y = y + height
+
+        # ROW 4
+        height = 0
+        pdf.set_xy(x, y)
+        pdf.set_font("Arial", "B", size=12)
+        pdf.multi_cell(col1, cell_height, "EL Ref:", align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_xy(x + col1, y)
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(col2, cell_height, "# {}".format(sample["fields"]["Sample_Id"]), align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_xy(x + col1 + col2, y)
+        pdf.set_font("Arial", "B", size=12)
+        pdf.multi_cell(col3, cell_height, "Job Number:", align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+        pdf.set_font("Arial", size=8)
+        pdf.set_xy(x + col1 + col2 + col3, y)
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(col4, cell_height, data["header_fields"]["Job_Id"], align="L", border=0)
+        if pdf.get_y() - y > height: height = pdf.get_y() - y
+
+        pdf.rect(x, y, col1, height)
+        pdf.rect(x + col1, y, col2, height)
+        pdf.rect(x + col1 + col2, y, col3, height)
+        pdf.rect(x + col1 + col2 + col3, y, col4, height)
+
+        y = y + height
 
         pdf.ln(cell_height)
 
@@ -124,27 +199,30 @@ def generate_report(data, outpath):
         pdf.cell(testc4, cell_height, "Details", align="L", border=1, ln=1)
 
         y = pdf.get_y()
-        x = pdf.get_x()
 
         for test in sample["tests"]:
+            height = 0
             pdf.set_font("Arial", size=12)
             pdf.set_xy(x, y)
             pdf.multi_cell(testc1, cell_height, test["Method"], align="L", border=0)
+            if pdf.get_y() - y > height: height = pdf.get_y() - y
             pdf.set_xy(x + testc1, y)
             pdf.multi_cell(testc2, cell_height, test["Result"], align="L", border=0)
+            if pdf.get_y() - y > height: height = pdf.get_y() - y
             pdf.set_xy(x + testc1 + testc2, y)
             pdf.multi_cell(testc3, cell_height, test["Units"], align="L", border=0)
+            if pdf.get_y() - y > height: height = pdf.get_y() - y
             pdf.set_font("Arial", size=8)
             pdf.set_xy(x + testc1 + testc2 + testc3, y)
             pdf.multi_cell(testc4, 4, test["Details"], align="L", border=0)
+            if pdf.get_y() - y > height: height = pdf.get_y() - y
 
-            height = pdf.get_y() - y
             pdf.rect(x, y, testc1, height)
             pdf.rect(x + testc1, y, testc2, height)
             pdf.rect(x + testc1 + testc2, y, testc3, height)
             pdf.rect(x + testc1 + testc2 + testc3, y, testc4, height)
 
-            y = pdf.get_y()
+            y = y + height
 
     pdf.output(outpath)
 

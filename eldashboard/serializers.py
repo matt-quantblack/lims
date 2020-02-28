@@ -18,6 +18,7 @@ def serialize_jobsample(jobsample):
 
     return sample
 
+
 class DropDownSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=True)
     name = serializers.CharField(max_length=50)
@@ -89,6 +90,16 @@ class ContactSerializer(serializers.ModelSerializer):
         model = Contacts
         fields = ('__all__')
 
+class NotificationGroupSerializer(serializers.ModelSerializer):
+    client = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='id'
+    )
+
+    class Meta:
+        model = NotificationGroups
+        fields = ('__all__')
 
 """
 NESTED RELATIONSHIPS
