@@ -1,6 +1,6 @@
 #user specific
 .idea
-./eldashboard/reports
+./eldashboard/reports/
 TODO.txt
 *.pyc
 

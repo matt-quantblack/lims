@@ -278,6 +278,7 @@ def emailreport(request):
 
 def uploadreport(request):
 
+
     reportname = request.POST.get('reportname', 'Test Report')
     jobid = int(request.POST.get('jobid', None))
     upfile = request.FILES.get('file', None)
@@ -295,7 +296,8 @@ def uploadreport(request):
                 reportno = maxno["reportno__max"] + 1
 
             fs = FileSystemStorage()
-            filepath = './eldashboard/reports/{}'.format(reportname, jobid, reportno)
+            filepath = './eldashboard/reports/{}_{}_{}.pdf'.format(reportname, jobid, reportno)
+
             fs.save(filepath, upfile)
 
             report = JobReports.objects.create(job_id=jobid, name=reportname, filepath=filepath, reportno=reportno)

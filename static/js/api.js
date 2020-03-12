@@ -219,8 +219,10 @@ $(function () {
             button.attr('disabled', false);
             if(data["success"] == true)
                 button.text("Emailed!");
-            else
+            else {
+                alert(data["error"]);
                 button.text("Email Failed!");
+            }
         });
     });
 
