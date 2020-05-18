@@ -124,6 +124,8 @@ def generatereport(request):
 
                 #calc error
                 error = ""
+                result_str = test.testresult
+
                 if is_float(test.testresult):
 
                     test.testresult = round(float(test.testresult), dp)
@@ -133,9 +135,12 @@ def generatereport(request):
                         val = round(float(test.testresult), dp)
                         error = '(+-) {val:,}'.format(val=round(val * test.test.error / 100, dp))
 
+                    #create a string number with commas
+                    result_str = '{:,}'.format(test.testresult)
+
                 table_data.append({
                     'Method': 'TM{} {}'.format(test.test.tmnumber, test.test.name),
-                    'Result': '{val1:,} {val2:}'.format(val1=test.testresult, val2=error),
+                    'Result': '{val1:} {val2:}'.format(val1=result_str, val2=error),
                     'Units': test.testunits,
                     'Details': 'Tested on: {}\nTesting Officer: {} {}\nLocation: {}'.format(test.testdate,
                                                    officer.firstname, officer.lastname,
@@ -380,34 +385,39 @@ def sendnotif(request):
 
     emailsToSend = {}
 
-    #first compile a list of all the samples for each contact
-    #(may be multiple samples to same contact so want only one email"
+    # first compile a list of all the samples for each notification group
+    # (may be multiple samples to same ng so want only one email"
     for sample in newsamples:
         sample.notified = True
         sample.save()
 
-        emails = []
-        for contact in sample.notificationgroup.contacts.all():
-            if contact.id not in emailsToSend:
-                emailsToSend[contact.id] = {'contact': contact, 'samples': []}
+        # one email to each notification group
+        if sample.notificationgroup.id not in emailsToSend:
+            emailsToSend[sample.notificationgroup.id] = {'ng': sample.notificationgroup, 'samples': []}
 
-            emailsToSend[contact.id]['samples'].append(sample)
+        # append this sample
+        emailsToSend[sample.notificationgroup.id]['samples'].append(sample)
 
     errors = ""
+    emailDetails = [] #info to return about what emails were sent
     for id in emailsToSend:
+        emails = []
         info = emailsToSend[id]
-        contact = info['contact']
-        emails.append((contact.email, '{} {}'.format(contact.firstname, contact.lastname)))
+
+        for contact in info['ng'].contacts.all():
+            emails.append((contact.email, '{} {}'.format(contact.firstname, contact.lastname)))
 
         emailtext = """Hi {},
-    
-            The following samples have been received by Enzyme Labs: \n\n""".format(contact.firstname)
+
+                        The following samples have been received by Enzyme Labs: \n\n""".format(info['ng'].name)
 
         for sample in info['samples']:
             emailtext += "#{} - Name:{}, Batch:{}, ClientRef: {}\n".format(sample.id,
                                                                          sample.name,
                                                                          sample.batch,
                                                                          sample.clientref)
+
+        emailDetails.append({'emails': emails, 'sample_count': len(info['samples'])})
 
         emailtext += """
     
@@ -421,6 +431,8 @@ def sendnotif(request):
             NSW 2204
             Australia"""
 
+
+
         success, error = send_email(emails, ("team@enzymelabs.com.au", "Enzyme Labs"), "Sample Received from Enzyme Labs",
                                     emailtext.replace("\n", "<br/>"),
                                     emailtext,
@@ -430,10 +442,10 @@ def sendnotif(request):
 
 
 
-        if len(errors) > 0:
-            return JsonResponse({'success': False, 'error': 'Could not send: {}'.format(errors)})
+    if len(errors) > 0:
+        return JsonResponse({'success': False, 'error': 'Could not send: {}'.format(errors), 'emailDetails': emailDetails})
 
-    return JsonResponse({'success': True})
+    return JsonResponse({'success': True, 'emailDetails': emailDetails})
 
 def addng(request):
 

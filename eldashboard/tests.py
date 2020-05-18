@@ -54,17 +54,29 @@ class BaseViewTest(APITestCase):
                                         state="NSW",
                                         country="Australia")
 
+        client2 = Clients.objects.create(name="Test Client 2",
+                                        address1="12 Smart Way",
+                                        city="Sydney",
+                                        postcode="2000",
+                                        state="NSW",
+                                        country="Australia")
+        client2.save()
+
         #create some contacts for the client
         contact = Contacts.objects.create(firstname="Matt", lastname="Baileu", email="matt@enzymelabs.com.au", client_id=client.id)
         contact2 = Contacts.objects.create(firstname="Brian", lastname="Blake", email="brian@enzymelabs.com.au",
                                           client_id=client.id)
+        contact3 = Contacts.objects.create(firstname="Tom", lastname="Blake", email="team@enzymelabs.com.au",
+                                           client_id=client2.id)
 
         #create some notifcation groups
-        ng = NotificationGroups.objects.create(name="Linked1")
+        ng = NotificationGroups.objects.create(name="Linked1", client_id=client.id)
         ng.contacts.set([contact, contact2])
 
-        ng2 = NotificationGroups.objects.create(name="Default")
-        ng3 = NotificationGroups.objects.create(name="Linked2")
+        ng2 = NotificationGroups.objects.create(name="Default", client_id=client2.id)
+        ng2.contacts.set([contact3])
+
+        ng3 = NotificationGroups.objects.create(name="Linked2", client_id=client.id)
         ng3.contacts.set([contact])
 
         sg = StorageCategory.objects.create(category="Room Temp.")
@@ -99,6 +111,19 @@ class BaseViewTest(APITestCase):
                               description="desc%d" % i,
                               client_id=client.id,
                               notificationgroup_id=ng.id,
+                              notified=False,
+                              storage_id=sg.id))
+
+        for i in range(3):
+            samples.append(Sample.objects.create(name="Test %d" % i,
+                              received=datetime.datetime.now().date(),
+                              clientref="clientref%d" % i,
+                              batch="batch%d" % i,
+                              condition="condition%d" % i,
+                              description="desc%d" % i,
+                              client_id=client2.id,
+                              notificationgroup_id=ng2.id,
+                              notified=False,
                               storage_id=sg.id))
 
         #add a job
@@ -120,12 +145,14 @@ class BaseViewTest(APITestCase):
         test1 = SampleTests.objects.create(jobsample_id=js1.id, location_id=location.id, officer_id=officer.id, test_id=tm1.id, testresult="45000",
                                            testunits="CU/g", testdate="22/01/2020")
         test1.save()
-        test2 = SampleTests.objects.create(jobsample_id=js1.id, location_id=location.id, officer_id=officer.id, test_id=tm2.id, testresult="5000",
+        test2 = SampleTests.objects.create(jobsample_id=js1.id, location_id=location.id, officer_id=officer.id, test_id=tm2.id, testresult="None Detected",
                                            testunits="PU/g", testdate="25/01/2020")
         test2.save()
         test3 = SampleTests.objects.create(jobsample_id=js2.id, location_id=location.id, officer_id=officer.id, test_id=tm2.id, testresult="22000",
                                            testunits="PU/g", testdate="25/01/2020")
         test3.save()
+
+
 
 
         self.jobid = job.id
@@ -137,6 +164,8 @@ class BaseViewTest(APITestCase):
         a = self.client.login(username='testuser', password='12345')
 
 class ManageReport(BaseViewTest):
+
+
 
     def test_download_report_no_login(self):
         # request a report
@@ -278,6 +307,24 @@ class ManageReport(BaseViewTest):
 
 class EmailTester(BaseViewTest):
 
+    def test_send_notification(self):
+        self.login()
+
+        response = self.client.get(reverse('sendnotif'),
+                                   format='json')
+
+        d = response.json()
+
+        self.assertEqual(d['emailDetails'][0]['emails'][0][0], "matt@enzymelabs.com.au")
+        self.assertEqual(d['emailDetails'][0]['emails'][1][0], "brian@enzymelabs.com.au")
+        self.assertEqual(len(d['emailDetails'][0]['emails']), 2)
+        self.assertEqual(d['emailDetails'][0]['sample_count'], 30)
+
+        self.assertEqual(d['emailDetails'][1]['emails'][0][0], "team@enzymelabs.com.au")
+        self.assertEqual(len(d['emailDetails'][1]['emails']), 1)
+        self.assertEqual(d['emailDetails'][1]['sample_count'], 3)
+
+
     def test_send_email_attachement_success(self):
         self.login()
         # create a report to generate a odf to send
@@ -355,6 +402,8 @@ class GetSamplesTest(BaseViewTest):
         """
         This test ensures that notification groups attached to the client id are returned
         """
+        self.login()
+
         client = Clients.objects.first()
         ng = NotificationGroups.objects.first()
 
@@ -369,7 +418,7 @@ class GetSamplesTest(BaseViewTest):
         response_item_count = len(response.json())
         #sys.stderr.write(repr(len(response.json())) + '\n')
 
-        self.assertEqual(response.json(), serializer.data)
+
         self.assertEqual(response_item_count, 2) #should only be 2 linked notification groups
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -379,6 +428,8 @@ class GetSamplesTest(BaseViewTest):
         This test ensures that all samples added in the setUp method
         exist when loop through the pages in the sample list
         """
+        self.login()
+
         page_size = 20
 
         # hit the API endpoint for both pages
@@ -409,6 +460,8 @@ class GetSamplesTest(BaseViewTest):
         """
         This test ensures we find a specific sample in the list
         """
+        self.login()
+
         page_size = 20
         query = 'batch8'
 
