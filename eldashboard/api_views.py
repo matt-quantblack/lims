@@ -313,8 +313,7 @@ def emailreport(request):
         return response
 
     try:
-        fs = FileSystemStorage()
-        file = fs.open(report.filepath, 'rb').read()
+        file = open(report.filepath, 'rb').read()
 
     except FileNotFoundError:
         return JsonResponse({'error': 'Report file not found'})
