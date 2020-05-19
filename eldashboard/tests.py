@@ -32,6 +32,9 @@ class BaseViewTest(APITestCase):
         reportype = ReportTypes.objects.create(name="Standard")
         reportype.save()
 
+        reportype2 = ReportTypes.objects.create(name="Template")
+        reportype2.save()
+
         location = Locations.objects.create(name="Marrickville, NSW")
         location.save()
 
@@ -152,6 +155,13 @@ class BaseViewTest(APITestCase):
                                            testunits="PU/g", testdate="25/01/2020")
         test3.save()
 
+
+        #add a template report
+        report_template = ReportTemplates.objects.create(name="Test Template", document="report_templates/Template.docx", report_type_id=reportype2.id)
+        report_template.save()
+        #add data for a custom report
+        job_data = JobData.objects.create(name="Data", job_id=job.id, filepath="./eldashboard/job_data/Data.xlsx", docno=1)
+        job_data.save()
 
 
 
@@ -351,6 +361,21 @@ class EmailTester(BaseViewTest):
 
 
 class GenerateReport(BaseViewTest):
+
+    def test_a(self):
+
+        self.login()
+        response = self.client.get('/template/1', follow=True)
+
+
+
+    def test_generate_custom_report(self):
+        self.login()
+        response = self.client.get(reverse('generatecustomreport'), {"reporttemplateid": 1, "reportdataid": 1, "jobid": self.jobid}, format='json')
+        d = response.json()
+
+        self.assertEqual(d["success"], True)
+
 
     def test_generate_standard_report_miss_jobid(self):
         self.login()

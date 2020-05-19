@@ -11,4 +11,5 @@ admin.site.register(CompanyDetail)
 admin.site.register(Contacts)
 admin.site.register(Job)
 admin.site.register(NotificationGroups)
+admin.site.register(ReportTemplates)
 

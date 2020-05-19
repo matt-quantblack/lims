@@ -50,6 +50,8 @@
                                                     </td>
                                                 </tr>
                                             </table>
+
+
                                         </div>
                                       </div>
                                 </div>
@@ -74,6 +76,7 @@
                                                 </td>
                                             </tr>
                                         </table>
+
                                     </div>
                                   </div>
                                 </div>
@@ -89,6 +92,70 @@
                                 </div>
                             </td>
                         </tr>
+                    <tr><td></td>
+                        <td>
+                        <div class="card page-card">
+                            <div class="card-body">
+                                <div class="card-text">
+                                <table style="width: 100%">
+                                    <tr>
+                                        <td style="padding-right:10px;">Report Template</td>
+                                        <td style="padding-right:10px;">
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle officer-input" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                    value="{{ default.reporttemplate.id }}" id="report_template">{{ default.reporttemplate}}</button>
+                                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                  {% for r in reporttemplates %}
+                                                    <span class="dropdown-item" value="{{ r.id}}">{{r}}</span>
+                                                  {% endfor %}
+                                              </div>
+                                            </div>
+                                        </td>
+                                        <td style="padding-right:10px;">Data</td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle officer-input" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                    value="{{ default.jobdata.id }}" id="report_data">{{ default.jobdata}}</button>
+                                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="data_dropdown">
+                                                  {% for jd in jobdata %}
+                                                    <span class="dropdown-item" value="{{ jd.id}}">{{jd}}</span>
+                                                  {% endfor %}
+                                              </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="btn btn-primary" id="generate_custom_report" jobid="{{ jobid }}">Generate</span>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                </div>
+                            </div>
+                        </div>
+                        </td>
+                        <td colspan="2">
+                        <div class="card page-card">
+                            <div class="card-body">
+                                <div class="card-text">
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <span class="btn btn-primary" id="upload_data">Attach Data</span>
+                                            </td>
+                                            <td>
+                                                <input type="hidden" name="jobid" value="{{ jobid }}"/>
+                                                <input type="file" name="file_data" id="attach-data"/>
+                                            </td>
+                                            <td>
+                                                <input name="dataname" style="width:250px" class="form-control" id="reportname-input" placeholder="Data Name" value="Job Data"/>
+                                            </td>
+
+                                        </tr>
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div></td></tr>
                     </table>
                     </form>
                     </div>

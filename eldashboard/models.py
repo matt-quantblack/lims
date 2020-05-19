@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+import os
+from django.dispatch import receiver
 
 class CompanyDetail(models.Model):
 
@@ -19,7 +21,6 @@ class CompanyDetail(models.Model):
 
     class Meta:
         db_table = "companydetails"
-
 
 class ReportTypes(models.Model):
 
@@ -47,7 +48,6 @@ class TestMethods(models.Model):
     class Meta:
         db_table = "testmethods"
 
-
 class Clients(models.Model):
 
     name = models.CharField(max_length=50, null=False, blank=False)
@@ -65,8 +65,6 @@ class Clients(models.Model):
 
     class Meta:
         db_table = "clients"
-
-
 
 class Contacts(models.Model):
 
@@ -119,7 +117,6 @@ class Sample(models.Model):
 
     class Meta:
         db_table = "samples"
-
 
 class JobSample(models.Model):
 
@@ -198,6 +195,32 @@ class JobReports(models.Model):
     class Meta:
         db_table = "jobreports"
 
+class ReportTemplates(models.Model):
+
+    name = models.CharField(max_length=50, null=False, blank=False)
+    report_type = models.ForeignKey(ReportTypes, on_delete=models.CASCADE)
+    document = models.FileField(upload_to='report_templates/')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "reporttemplates"
+
+
+class JobData(models.Model):
+
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, null=False, blank=False, default='')
+    filepath = models.CharField(max_length=100, null=False, blank=False)
+    docno = models.IntegerField()
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "jobdata"
+
 class JobActivity(models.Model):
 
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
@@ -209,3 +232,36 @@ class JobActivity(models.Model):
 
     class Meta:
         db_table = "jobactivity"
+
+
+
+# These two auto-delete files from filesystem when they are unneeded:
+@receiver(models.signals.post_delete, sender=ReportTemplates)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    """
+    Deletes file from filesystem
+    when corresponding `MediaFile` object is deleted.
+    """
+    if instance.document:
+        if os.path.isfile(instance.document.path):
+            os.remove(instance.document.path)
+
+@receiver(models.signals.pre_save, sender=ReportTemplates)
+def auto_delete_file_on_change(sender, instance, **kwargs):
+    """
+    Deletes old file from filesystem
+    when corresponding `MediaFile` object is updated
+    with new file.
+    """
+    if not instance.pk:
+        return False
+
+    try:
+        old_file = ReportTemplates.objects.get(pk=instance.pk).document
+    except ReportTemplates.DoesNotExist:
+        return False
+
+    new_file = instance.document
+    if not old_file == new_file:
+        if os.path.isfile(old_file.path):
+            os.remove(old_file.path)

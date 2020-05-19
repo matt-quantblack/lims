@@ -90,6 +90,17 @@ class ContactSerializer(serializers.ModelSerializer):
         model = Contacts
         fields = ('__all__')
 
+class ReportTemplateSerializer(serializers.ModelSerializer):
+    report_type = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='name'
+    )
+
+    class Meta:
+        model = ReportTemplates
+        fields = ('__all__')
+
 class NotificationGroupSerializer(serializers.ModelSerializer):
     client = serializers.SlugRelatedField(
         many=False,

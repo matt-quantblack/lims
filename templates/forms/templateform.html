@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="card page-card">
+      <div class="card-body">
+        <h5 class="card-title">
+            <a class="btn btn-info" href="{% url 'listtemplates' %}">Back</a>
+            {% if id %}
+                Report Template #{{ id }}
+                <a class="btn btn-danger float-md-right" href="{% url 'removetemplate' id=id %}">Delete</a>
+            {% else %}
+                New Report Template
+            {% endif %}
+        </h5>
+        <hr>
+        <div class="card-text">
+            <form action="" method="post"  enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ form.name|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ form.report_type|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ form.document }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <input type="submit" class="btn btn-success" value="Save">
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+      </div>
+</div>
+
+{% endblock %}

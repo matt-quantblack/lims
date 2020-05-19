@@ -22,6 +22,10 @@ from django.shortcuts import redirect
 from django.db.models.functions import Cast
 from django.db.models import CharField
 
+from .MSExcelDataParser import MSExcelDataParser
+from .MicrosoftDocxParser import MicrosoftDocxParser
+from .ResultsTableBuilder import ResultsTableBuilder
+
 import datetime
 
 def is_float(n):
@@ -30,6 +34,60 @@ def is_float(n):
         return True
     except:
         return False
+
+def generatecustomreport(request):
+
+    if request.user.is_authenticated == False:
+        return JsonResponse({'errors': ['forbidden']})
+
+    #get the request parameters and ensure all is valid
+    jobid = request.GET.get('jobid', None)
+    reporttemplateid = request.GET.get('reporttemplateid', None)
+    reportdataid = request.GET.get('reportdataid', None)
+    reportname = request.GET.get('reportname', 'Test Report')
+
+    errors = []
+    if jobid is None:
+        errors.append("JobId missing from request.")
+    if reporttemplateid is None or reporttemplateid == '':
+        errors.append("Report Template not selected.")
+    if reportdataid is None or reportdataid == '':
+        errors.append("Report Data not selected.")
+
+    if len(errors) > 0:
+        return JsonResponse({'errors': errors})
+
+    #get the filenames from the database
+    report_template = ReportTemplates.objects.get(id=reporttemplateid)
+    job_data = JobData.objects.get(id=reportdataid)
+
+    # filepath to save
+    save_filepath = "./media/temp_reports/Test_Report_{}.docx".format(jobid)
+
+    # process the google sheets document into a job
+    try:
+        xldp = MSExcelDataParser(job_data.filepath)
+        job = xldp.parse_document()
+
+        # create the MicrosofDocxParser to parse the template document
+        doc_parser = MicrosoftDocxParser()
+
+        # get the table commands so we can build the required tables from the data
+        table_commands = doc_parser.extract_table_commands(report_template.document.path)
+
+        # build the tables
+        table_builder = ResultsTableBuilder()
+        tables = table_builder.create_tables(table_commands, job)
+
+        # generate and save report
+        doc_parser.generate_report(report_template.document.path, save_filepath, job.fields, tables)
+
+        return JsonResponse({'success': True, 'path': save_filepath})
+
+    # loop continues to run without crashing
+    except Exception as e:
+        return JsonResponse({'errors': e.__str__()})
+
 
 def generatereport(request):
 
@@ -78,7 +136,12 @@ def generatereport(request):
     if len(errors) > 0:
         return JsonResponse({'errors': errors})
 
-    #format the data for the report
+    #create an empty address2 for the None values
+    address2 = ""
+    if job.client.address2 is not None:
+        address2 = job.client.address2
+
+    # format the data for the report
     header_fields = {
         'TestOfficer': '{} {}'.format(officer.firstname, officer.lastname),
         'Title': officer.title,
@@ -90,7 +153,7 @@ def generatereport(request):
         'Job_Id': '{} - {}'.format(job.id, reportno),
         'Now': datetime.date.today().strftime("%d/%m/%Y"),
         'Sample_Client_Name': job.client.name,
-        'Sample_Client_Full_Address': '{} {} {} {} {} {}'.format(job.client.address1, job.client.address2,
+        'Sample_Client_Full_Address': '{} {} {} {} {} {}'.format(job.client.address1, address2,
                                                                      job.client.city, job.client.postcode,
                                                                      job.client.state, job.client.country),
     }
@@ -226,6 +289,24 @@ def downloadreport(request):
 
     return response
 
+def downloadtempreport(request):
+
+    if request.user.is_authenticated == False:
+        return JsonResponse({'error': 'forbidden'})
+
+    # get the client id from the request and convert to an int
+    path = request.GET.get('path', None)
+
+    with open(path, 'rb') as f:
+        contents = f.read()
+
+    os.remove(path)
+
+    response = HttpResponse(contents, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response['Content-Disposition'] = 'attachment; filename="Temp_Report.docx"'
+    return response
+
+
 def emailreport(request):
 
     report, response = getreportfromrequestid(request)
@@ -317,6 +398,39 @@ def uploadreport(request):
         }
 
         return JsonResponse(context)
+
+    return JsonResponse({'error': 'Wrong method, use POST.'})
+
+def uploaddata(request):
+
+    jobid = int(request.POST.get('jobid', None))
+    name = request.POST.get('dataname', 'Job Data')
+    upfile = request.FILES.get('file_data', None)
+
+    if upfile is None:
+        return JsonResponse({'error': 'Data file needs to be submitted.'})
+
+    if request.method == 'POST':
+
+        try:
+            # get the report number count
+            docno = 1
+            maxno = JobData.objects.filter(job_id=jobid).aggregate(Max('docno'))
+            if maxno["docno__max"] is not None:
+                docno = maxno["docno__max"] + 1
+
+            fs = FileSystemStorage()
+            filepath = './eldashboard/job_data/JobData_{}_{}.xlsx'.format(jobid, docno)
+
+            fs.save(filepath, upfile)
+
+            job_data = JobData.objects.create(job_id=jobid, filepath=filepath, name=name, docno=docno)
+            job_data.save()
+
+        except Exception as e:
+            return JsonResponse({'error': 'Could not save file {}'.format(e)})
+
+        return JsonResponse({'success': True, 'id': job_data.id, 'name': job_data.name})
 
     return JsonResponse({'error': 'Wrong method, use POST.'})
 
@@ -817,6 +931,38 @@ def searchcontacts(request):
 
     # format queryset into json for returning
     serializer = ContactSerializer(res, many=True)
+
+    context = {
+        'data': serializer.data,
+        'more': res.has_next()
+    }
+
+    return JsonResponse(context)
+
+def searchtemplates(request):
+    if request.user.is_authenticated == False:
+        return JsonResponse({'error': 'forbidden'})
+
+    query = request.GET.get('q')
+    page_size = request.GET.get('page_size', 20)
+    page = request.GET.get('page')
+
+    if query:
+        results = ReportTemplates.objects.filter(name__icontains=query).order_by("name")
+    else:
+        results = ReportTemplates.objects.all().order_by("name")
+
+    paginator = Paginator(results, page_size)
+
+    try:
+        res = paginator.page(page)
+    except PageNotAnInteger:
+        res = paginator.page(1)
+    except EmptyPage:
+        res = paginator.page(paginator.num_pages)
+
+    # format queryset into json for returning
+    serializer = ReportTemplateSerializer(res, many=True)
 
     context = {
         'data': serializer.data,

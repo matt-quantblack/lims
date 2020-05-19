@@ -1,11 +1,7 @@
 from django import forms
 from ELLIMS import settings
 
-from .models import Sample
-from .models import Clients
-from .models import Contacts
-from .models import TestMethods
-from .models import Job
+from .models import *
 
 class SampleForm(forms.ModelForm):
 
@@ -70,3 +66,12 @@ class JobForm(forms.ModelForm):
          'ponumber': "PO Number",
          'notificationgroup': 'Notification Group'
       }
+
+
+
+
+class ReportTemplateForm(forms.ModelForm):
+
+   class Meta:
+      model = ReportTemplates
+      fields = ['name', 'report_type', 'document']

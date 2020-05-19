@@ -1,13 +1,9 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.db.models import Max
+from django.core.files.storage import FileSystemStorage
 
-
-from .forms import SampleForm
-from .forms import ClientForm
-from .forms import ContactForm
-from .forms import TestMethodForm
-from .forms import JobForm
+from .forms import *
 
 from .models import *
 from .serializers import serialize_jobsample
@@ -113,11 +109,15 @@ def listjobresults(request, id):
     reporttypes = ReportTypes.objects.filter(testmethods__sampletests__jobsample__job__id=id).distinct()
 
     reports = JobReports.objects.filter(job_id=id).all()
+    jobdata = JobData.objects.filter(job_id=id).all()
+    reporttemplates = ReportTemplates.objects.all()
 
     defaults = {
         'officer': officers.first(),
         'location': locations.first(),
-        'report': reporttypes.first()
+        'report': reporttypes.first(),
+        'jobdata': jobdata.last(),
+        'reporttemplate': reporttemplates.last()
     }
 
     renderstring = '<tr><td><button type="button" class="btn btn-info download_report" reportid="{id}">Download\
@@ -130,6 +130,8 @@ def listjobresults(request, id):
                                                          'locations': locations,
                                                          'reporttypes': reporttypes,
                                                          'reports': reports,
+                                                         'jobdata': jobdata,
+                                                         'reporttemplates': reporttemplates,
                                                          'default': defaults,
                                                          'jobid': id,
                                                          'renderstring': renderstring,
@@ -206,6 +208,20 @@ def listcontactsselection(request, refid, clientid):
                   {'backurl': backurl, 'confirmurl': confirmurl, 'refid': refid, 'title':title, 'columns': columns,
                    'selected': contacts, 'initialresults': results})
 
+def listtemplates(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
+    addurl = 'template'
+    apiurl = '/api/searchtemplates'
+    title = 'Report Templates'
+    columns = [{'name': 'Name'},
+               {'name': 'Report Type'}]
+    renderstring = '<tr onclick="window.location.href=\'template/{id}\'"><td>{name}</td><td>{report_type}</td></tr>'
+
+    return render(request, 'lists/tablelist.html',
+                  {'addurl': addurl, 'apiurl': apiurl, 'title': title, 'columns': columns,
+                   'renderstring': renderstring})
 
 def updatesampleform(request, sampleid):
     if request.user.is_authenticated == False:
@@ -336,6 +352,60 @@ def removeclient(request, id):
     Clients.objects.filter(id=id).delete()
     return redirect('/list_clients')
 
+##############################################################################################
+
+def insertnewtemplate(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
+
+    form = ReportTemplateForm(request.POST, request.FILES)
+
+    # save the form and redirect to the update sample page
+    if form.is_valid():
+
+        item = form.save()
+        return item
+
+    return None
+
+def updatetemplateform(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
+    item = ReportTemplates.objects.get(id=id)
+
+    if request.method == 'POST':
+        form = ReportTemplateForm(request.POST or None, request.FILES or None, instance=item)
+        if form.is_valid():
+            form.save()
+            return redirect('/list_templates')
+    else:
+        form = ReportTemplateForm(instance=item)
+
+    return render(request, 'forms/templateform.html', {"form": form, "id": item.id})
+
+
+def templateform(request):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
+    # create the sampleForm object from the posted form data
+    if request.method == 'POST':
+        item = insertnewtemplate(request)
+        return redirect('/template/{}'.format(item.id))
+    #or create a blank form if not a post
+    else:
+        form = ReportTemplateForm()
+
+    return render(request, 'forms/templateform.html', {"form": form})
+
+def removetemplate(request, id):
+    if request.user.is_authenticated == False:
+        return redirect('/login')
+
+    ReportTemplates.objects.filter(id=id).delete()
+    return redirect('/list_templates')
 
 ##############################################################################################
 

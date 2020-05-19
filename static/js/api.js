@@ -89,10 +89,10 @@ $(function () {
 
     $("#send_notifs").click(function(e) {
         button = $(this);
-        button.attr('disabled', true);
+        button.addClass('disabled');
 
          send_api_request('/api/sendnotif',{}, function(data) {
-            button.attr('disabled', false);
+            button.removeClass('disabled');
             if(data.hasOwnProperty("error"))
                 alert(data["error"]);
             else
@@ -176,28 +176,67 @@ $(function () {
 
     });
 
+    $("#generate_custom_report").click(function() {
+        button = $(this);
+        id = $(this).attr('jobid');
+        reportname = $("#reportname-input").val()
+        reporttypeid = $("#report_type").attr('value');
+        reporttypename = $("#report_type").text();
+
+        let reporttemplateid = $("#report_template").attr('value');
+        let reportdataid = $("#report_data").attr('value');
+        let getstring = "?jobid="+id+"&reporttemplateid="+reporttemplateid+"&reportdataid="+reportdataid+"&reportname="+reportname;
+
+        if(reporttemplateid == '')
+        {
+            alert("Select a report template!");
+            return;
+        }
+        if(reportdataid == '')
+        {
+            alert("Select a the data or upload new data!");
+            return;
+        }
+
+        button.addClass('disabled');
+        send_api_request('/api/generatecustomreport' + getstring, {}, function (data) {
+            button.removeClass('disabled');
+            if(data["success"] == true)
+            {
+                window.location = '/api/downloadtempreport?path=' + data["path"];
+            }
+            else
+                alert(data["errors"]);
+        });
+
+    });
+
     $("#generate_report").click(function() {
         button = $(this);
-        button.attr('disabled', true);
+        button.addClass('disabled');
         render_string = $("#renderstring").val();
         id = $(this).attr('jobid');
         reportname = $("#reportname-input").val()
         reporttypeid = $("#report_type").attr('value');
-        getstring = "?jobid="+id+"&reporttypeid="+reporttypeid+"&reportname="+reportname;
+        reporttypename = $("#report_type").text();
+
+        let getstring = "?jobid="+id+"&reporttypeid="+reporttypeid+"&reportname="+reportname;
+
         $(".should-include:checked").each(function() {
             getstring += "&testids="+$(this).attr('testid');
         });
 
         send_api_request('/api/generatereport' + getstring, {}, function (data) {
-                button.attr('disabled', false);
-                render_list('#reportlist tbody', data, render_string, false);
-            });
+            button.removeClass('disabled');
+            render_list('#reportlist tbody', data, render_string, false);
+        });
+
     });
 
 
     $("#reportlist").on('click', '.delete_report', function() {
         button = $(this);
-        button.attr('disabled', true);
+        button.addClass('disabled');
         id = $(this).attr('reportid');
         row = $(this).parent().parent();
 
@@ -213,10 +252,10 @@ $(function () {
 
     $("#reportlist").on('click', '.email_report', function() {
         button = $(this);
-        button.attr('disabled', true);
+        button.addClass('disabled');
         id = $(this).attr('reportid');
         send_api_request('/api/emailreport', {'reportid': id}, function (data) {
-            button.attr('disabled', false);
+            button.removeClass('disabled');
             if(data["success"] == true)
                 button.text("Emailed!");
             else {
@@ -228,7 +267,7 @@ $(function () {
 
     $("#upload_report").click(function() {
         button = $(this);
-        button.attr('disabled', true);
+        button.addClass('disabled');
         render_string = $("#renderstring").val();
         var data = new FormData($('form').get(0));
         $.ajax({
@@ -239,7 +278,7 @@ $(function () {
             processData: false,
             contentType: false,
             success: function(data) {
-                button.attr('disabled', false);
+                button.removeClass('disabled');
                 if(data.hasOwnProperty("error"))
                     alert(data["error"]);
                 else
@@ -248,13 +287,38 @@ $(function () {
         });
     });
 
+     $("#upload_data").click(function() {
+        button = $(this);
+        button.addClass('disabled');
+        var data = new FormData($('form').get(0));
+        $.ajax({
+            url: '/api/uploaddata',
+            type: 'POST',
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                button.removeClass('disabled');
+                if(data.hasOwnProperty("error"))
+                    alert(data["error"]);
+                else {
+                    $("#data_dropdown").append($('<span>', {class: "dropdown-item", value: data.id, text: data.name}));
+                    alert("Upload Success")
+                }
+
+
+            }
+        });
+    });
+
     $("#nglist tbody").on('click', '.delete_ng', function() {
         button = $(this);
-        button.attr('disabled', true);
+        button.addClass('disabled');
         id = $(this).attr('ngid');
         row = $(this).parent().parent().parent();
         send_api_request('/api/removeng', {'ngid': id}, function (data) {
-            button.attr('disabled', false);
+            button.removeClass('disabled');
             if(data["success"] == true)
                 row.remove();
             else
@@ -264,13 +328,13 @@ $(function () {
 
     $("#add_ng").click(function() {
         button = $(this);
-        button.attr('disabled', true);
+        button.addClass('disabled');
         render_string = $("#renderstring").val();
         id = $(this).attr('clientid');
         name = $("#ng_name").val()
 
         send_api_request('/api/addng', {'clientid': id, 'name':name}, function (data) {
-                button.attr('disabled', false);
+                button.removeClass('disabled');
                 if(data.hasOwnProperty("error"))
                     alert(data["error"]);
                 else

@@ -1,6 +1,9 @@
 #user specific
 .idea
 ./eldashboard/reports/
+./eldashboard/job_data/
+./eldashboard/report_templates/
+./eldashboard/temp_report_docs/
 TODO.txt
 *.pyc
 

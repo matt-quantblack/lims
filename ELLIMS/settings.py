@@ -154,3 +154,6 @@ LOGIN_REDIRECT_URL = 'dashboard'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 DATE_INPUT_FORMATS = ['%d/%m/%Y']
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
