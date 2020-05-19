@@ -156,10 +156,10 @@ class BaseViewTest(APITestCase):
         test3.save()
 
 
-        #add a template report
+        #add a template reports
         report_template = ReportTemplates.objects.create(name="Test Template", document="report_templates/Template.docx", report_type_id=reportype2.id)
         report_template.save()
-        #add data for a custom report
+        #add data for a custom reports
         job_data = JobData.objects.create(name="Data", job_id=job.id, filepath="./eldashboard/job_data/Data.xlsx", docno=1)
         job_data.save()
 
@@ -178,7 +178,7 @@ class ManageReport(BaseViewTest):
 
 
     def test_download_report_no_login(self):
-        # request a report
+        # request a reports
         response = self.client.get(reverse('downloadreport'),
                                    {"reportid": 1},
                                    format='json')
@@ -188,7 +188,7 @@ class ManageReport(BaseViewTest):
     def test_download_report_wrongid(self):
         self.login()
 
-        # request a report
+        # request a reports
         response = self.client.get(reverse('downloadreport'),
                                    {"reportid": 99},
                                    format='json')
@@ -199,7 +199,7 @@ class ManageReport(BaseViewTest):
 
     def test_download_report_file_missing(self):
         self.login()
-        # create a report entry with an file that doesn't exist
+        # create a reports entry with an file that doesn't exist
         report = JobReports.objects.create(job_id=self.jobid, name="Dummy", reportno=1, filepath="./reports/doesntexist.pdf")
         report.save()
 
@@ -212,7 +212,7 @@ class ManageReport(BaseViewTest):
     def test_download_report_success(self):
         self.login()
 
-        # create a report to download
+        # create a reports to download
         response = self.client.get(reverse('generatereport'),
                                    {"jobid": self.jobid, "reporttypeid": self.reporttypeid, "testids": self.testids},
                                    format='json')
@@ -230,7 +230,7 @@ class ManageReport(BaseViewTest):
         )
 
     def test_email_report_no_login(self):
-        # request a report
+        # request a reports
         response = self.client.get(reverse('emailreport'),
                                    {"reportid": 1},
                                    format='json')
@@ -240,7 +240,7 @@ class ManageReport(BaseViewTest):
     def test_email_report_wrongid(self):
         self.login()
 
-        # request a report
+        # request a reports
         response = self.client.get(reverse('emailreport'),
                                    {"reportid": 99},
                                    format='json')
@@ -251,7 +251,7 @@ class ManageReport(BaseViewTest):
 
     def test_email_report_file_missing(self):
         self.login()
-        # create a report entry with an file that doesn't exist
+        # create a reports entry with an file that doesn't exist
         report = JobReports.objects.create(job_id=self.jobid, name="Dummy", reportno=1,
                                            filepath="./reports/doesntexist.pdf")
         report.save()
@@ -265,7 +265,7 @@ class ManageReport(BaseViewTest):
     def test_email_report_success(self):
         self.login()
 
-        # create a report to download
+        # create a reports to download
         response = self.client.get(reverse('generatereport'),
                                    {"jobid": self.jobid, "reporttypeid": self.reporttypeid, "testids": self.testids},
                                    format='json')
@@ -286,7 +286,7 @@ class ManageReport(BaseViewTest):
     def test_delete_report(self):
         self.login()
 
-        #create a report to delete
+        #create a reports to delete
         response = self.client.get(reverse('generatereport'),
                                    {"jobid": self.jobid, "reporttypeid": self.reporttypeid, "testids": self.testids},
                                    format='json')
@@ -337,7 +337,7 @@ class EmailTester(BaseViewTest):
 
     def test_send_email_attachement_success(self):
         self.login()
-        # create a report to generate a odf to send
+        # create a reports to generate a odf to send
         response = self.client.get(reverse('generatereport'),
                                    {"jobid": self.jobid, "reporttypeid": self.reporttypeid, "testids": self.testids},
                                    format='json')

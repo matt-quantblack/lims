@@ -65,7 +65,7 @@ class ReportBuilderTests(unittest.TestCase):
         table_builder = ResultsTableBuilder()
         tables = table_builder.create_tables(table_commands, job)
 
-        #generate and save report
+        #generate and save reports
         doc_parser.generate_report(self.template_doc, self.save_doc, job.fields, tables)
 
         self.assertEqual(1,1)

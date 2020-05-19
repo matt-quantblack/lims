@@ -46,7 +46,7 @@ class MSExcelDataParser:
             #get sheet as a data frame
             df = xl.parse(title, parse_dates=False)
 
-            # special Details tab is used to extract the details required for the report
+            # special Details tab is used to extract the details required for the reports
             if title == "Details":
                 self.parse_details(job, df)
             else:
@@ -59,7 +59,7 @@ class MSExcelDataParser:
             return None
 
     def parse_details(self, job, df):
-        """ Parses the details tab which has information about the report
+        """ Parses the details tab which has information about the reports
 
         Args:
             job (SRGJob): the pointer to the job object to hold all the results

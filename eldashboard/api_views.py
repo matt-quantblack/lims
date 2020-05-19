@@ -12,7 +12,7 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 from .static_report_standard import generate_report as generate_static_standard_report
 from .models import *
-from django.core.files.storage import FileSystemStorage
+
 from django.http import FileResponse
 
 from .serializers import *
@@ -79,7 +79,7 @@ def generatecustomreport(request):
         table_builder = ResultsTableBuilder()
         tables = table_builder.create_tables(table_commands, job)
 
-        # generate and save report
+        # generate and save reports
         doc_parser.generate_report(report_template.document.path, save_filepath, job.fields, tables)
 
         return JsonResponse({'success': True, 'path': save_filepath})
@@ -127,7 +127,7 @@ def generatereport(request):
     if officer is None:
         errors.append("This officer doesn't exist.")
 
-    #get the report number count
+    #get the reports number count
     reportno = 1
     maxno = JobReports.objects.filter(job_id=jobid).aggregate(Max('reportno'))
     if maxno["reportno__max"] is not None:
@@ -141,7 +141,7 @@ def generatereport(request):
     if job.client.address2 is not None:
         address2 = job.client.address2
 
-    # format the data for the report
+    # format the data for the reports
     header_fields = {
         'TestOfficer': '{} {}'.format(officer.firstname, officer.lastname),
         'Title': officer.title,
@@ -220,8 +220,9 @@ def generatereport(request):
         'header_fields': header_fields,
         'samples': samples}
 
-    #try to generate the report and save it
+    #try to generate the reports and save it
     filepath = "./eldashboard/reports/Test_Report_{}_{}.pdf".format(jobid, reportno)
+
     try:
         generate_static_standard_report(data, filepath)
     except (KeyError, ValueError, FileNotFoundError) as e:
@@ -246,7 +247,7 @@ def getreportfromrequestid(request):
     #get the client id from the request and convert to an int
     reportid = request.GET.get('reportid', None)
 
-    #get the report
+    #get the reports
     try:
         report = JobReports.objects.get(id=reportid)
     except JobReports.DoesNotExist:
@@ -263,8 +264,7 @@ def deletereport(request):
 
     #try to delete the file
     try:
-        fs = FileSystemStorage()
-        fs.delete(report.filepath)
+        os.remove(report.filepath)
     except IOError as e:
         print(e)
 
@@ -280,12 +280,11 @@ def downloadreport(request):
         return response
 
     try:
-        fs = FileSystemStorage()
-        response = FileResponse(fs.open(report.filepath, 'rb'), content_type='application/force-download')
+        response = FileResponse(open(report.filepath, 'rb'), content_type='application/force-download')
         response['Content-Disposition'] = 'attachment; filename="{}_{}_{}.pdf"'.format(report.name, report.job_id,
                                                                                        report.reportno)
-    except FileNotFoundError:
-        return JsonResponse({'error': 'Report file not found'})
+    except FileNotFoundError as e:
+        return JsonResponse({'error': 'Report file not found {}'.format(e)})
 
     return response
 
@@ -375,7 +374,7 @@ def uploadreport(request):
     if request.method == 'POST':
 
         try:
-            # get the report number count
+            # get the reports number count
             reportno = 1
             maxno = JobReports.objects.filter(job_id=jobid).aggregate(Max('reportno'))
             if maxno["reportno__max"] is not None:
@@ -413,7 +412,7 @@ def uploaddata(request):
     if request.method == 'POST':
 
         try:
-            # get the report number count
+            # get the reports number count
             docno = 1
             maxno = JobData.objects.filter(job_id=jobid).aggregate(Max('docno'))
             if maxno["docno__max"] is not None:

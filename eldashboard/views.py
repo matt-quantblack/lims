@@ -115,7 +115,7 @@ def listjobresults(request, id):
     defaults = {
         'officer': officers.first(),
         'location': locations.first(),
-        'report': reporttypes.first(),
+        'reports': reporttypes.first(),
         'jobdata': jobdata.last(),
         'reporttemplate': reporttemplates.last()
     }

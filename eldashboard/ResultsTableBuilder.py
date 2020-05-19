@@ -14,7 +14,7 @@ class ResultsTableBuilder:
 
         Args:
             table_commands (str[]): an array of strings from the template, each string corresponding
-            to a table command (requested table required for the report)
+            to a table command (requested table required for the reports)
             job (SRGJob): job object that contains all the producst and their data
 
         Returns:
@@ -160,7 +160,7 @@ class ResultsTableBuilder:
             sample_name (str): the title of the table - full name of sample
             tests (str): Comma seperated list of tests to include
             precision (str): An integer, as a string, for the number of decimal places
-                to report
+                to reports
             orientation (str): Vertical-lists samples vertically, Horizontal-lists
                 samples horizontally
             widths (str): the widths string that specifies the column widths
@@ -250,7 +250,7 @@ class ResultsTableBuilder:
             title (str): the title of the table
             tests (str): Comma seperated list of tests to include
             precision (str): An integer, as a string, for the number of decimal places
-                to report
+                to reports
             orientation (str): Vertical-lists tests vertically, Horizontal-lists
                 tests horizontally
             widths (str): the widths string that specifies the column widths

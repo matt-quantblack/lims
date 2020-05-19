@@ -189,7 +189,7 @@ $(function () {
 
         if(reporttemplateid == '')
         {
-            alert("Select a report template!");
+            alert("Select a reports template!");
             return;
         }
         if(reportdataid == '')

@@ -6,7 +6,7 @@ import io
 import os
 
 class MicrosoftDocxParser:
-    """ Class that parses a Microsoft Docx format report template.
+    """ Class that parses a Microsoft Docx format reports template.
     """
 
     def __inti__(self):
@@ -38,7 +38,7 @@ class MicrosoftDocxParser:
         return table_commands
 
     def generate_report(self, template_path, save_path, fields, tables):
-        """ Generates the Docx report by inserting all the job.Details fields
+        """ Generates the Docx reports by inserting all the job.Details fields
         in the text and inserting the results tables in the <<table command>>
         positions
 

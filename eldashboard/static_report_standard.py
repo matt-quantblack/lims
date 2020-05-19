@@ -56,7 +56,7 @@ class PDF(FPDF):
 
         self.set_font("Arial", size=6)
         self.multi_cell(190, 2,
-                        "The data pertains solely to the samples tested. The homogeneity or the sampling of the samples cannot be guaranteed and therefore may not be representative of the lot or batch or other samples. Consequently the data may not necessarily justify the acceptance or rejection of a lot or batch, a product recall or support legal proceedings. It is the responsibility of the client to provide all information relevant to the analysis requested. This report does not imply that Enzyme Labs has been engaged to consult upon the consequences of the analysis and for any action that should be taken as a result of the analysis. This report must be reproduced in full unless written permission is obtained from Enzyme Labs.")
+                        "The data pertains solely to the samples tested. The homogeneity or the sampling of the samples cannot be guaranteed and therefore may not be representative of the lot or batch or other samples. Consequently the data may not necessarily justify the acceptance or rejection of a lot or batch, a product recall or support legal proceedings. It is the responsibility of the client to provide all information relevant to the analysis requested. This reports does not imply that Enzyme Labs has been engaged to consult upon the consequences of the analysis and for any action that should be taken as a result of the analysis. This reports must be reproduced in full unless written permission is obtained from Enzyme Labs.")
 
 
 def generate_report(data, outpath):
