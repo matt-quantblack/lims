@@ -64,7 +64,7 @@ $(function () {
     }
 
     //dropdown functionalioty
-    $(".dropdown .dropdown-menu span").click(function () {
+    $("body").on('click', ".dropdown .dropdown-menu span", function () {
 
         $($(this).parent().parent().children()[0]).text($(this).text());
         $($(this).parent().parent().children()[0]).val($(this).attr('value'));

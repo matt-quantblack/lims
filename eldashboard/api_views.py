@@ -12,6 +12,7 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 from .static_report_standard import generate_report as generate_static_standard_report
 from .models import *
+from django.core.files.storage import FileSystemStorage
 
 from django.http import FileResponse
 
@@ -63,6 +64,7 @@ def generatecustomreport(request):
 
     # filepath to save
     save_filepath = "./media/temp_reports/Test_Report_{}.docx".format(jobid)
+    load_filepath = "./temp_reports/Test_Report_{}.docx".format(jobid)
 
     # process the google sheets document into a job
     try:
@@ -82,7 +84,7 @@ def generatecustomreport(request):
         # generate and save reports
         doc_parser.generate_report(report_template.document.path, save_filepath, job.fields, tables)
 
-        return JsonResponse({'success': True, 'path': save_filepath})
+        return JsonResponse({'success': True, 'path': load_filepath})
 
     # loop continues to run without crashing
     except Exception as e:
@@ -221,15 +223,17 @@ def generatereport(request):
         'samples': samples}
 
     #try to generate the reports and save it
-    filepath = "./eldashboard/reports/Test_Report_{}_{}.pdf".format(jobid, reportno)
+    savepath = "./media/reports/Test_Report_{}_{}.pdf".format(jobid, reportno)
+    loadpath = "./reports/Test_Report_{}_{}.pdf".format(jobid, reportno)
+
 
     try:
-        generate_static_standard_report(data, filepath)
+        generate_static_standard_report(data, savepath)
     except (KeyError, ValueError, FileNotFoundError) as e:
         return JsonResponse({'errors':['Report generation failed {}'.format(e)]})
 
     # create a db entry
-    report = JobReports.objects.create(job_id=jobid, name=reportname, filepath=filepath, reportno=reportno)
+    report = JobReports.objects.create(job_id=jobid, name=reportname, filepath=loadpath, reportno=reportno)
     report.save()
 
     context = {
@@ -264,7 +268,8 @@ def deletereport(request):
 
     #try to delete the file
     try:
-        os.remove(report.filepath)
+        fs = FileSystemStorage()
+        fs.delete(report.filepath)
     except IOError as e:
         print(e)
 
@@ -280,7 +285,8 @@ def downloadreport(request):
         return response
 
     try:
-        response = FileResponse(open(report.filepath, 'rb'), content_type='application/force-download')
+        fs = FileSystemStorage()
+        response = FileResponse(fs.open(report.filepath, 'rb'), content_type='application/force-download')
         response['Content-Disposition'] = 'attachment; filename="{}_{}_{}.pdf"'.format(report.name, report.job_id,
                                                                                        report.reportno)
     except FileNotFoundError as e:
@@ -296,10 +302,12 @@ def downloadtempreport(request):
     # get the client id from the request and convert to an int
     path = request.GET.get('path', None)
 
-    with open(path, 'rb') as f:
+    fs = FileSystemStorage()
+
+    with fs.open(path, 'rb') as f:
         contents = f.read()
 
-    os.remove(path)
+    fs.delete(path)
 
     response = HttpResponse(contents, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     response['Content-Disposition'] = 'attachment; filename="Temp_Report.docx"'
@@ -380,7 +388,7 @@ def uploadreport(request):
                 reportno = maxno["reportno__max"] + 1
 
             fs = FileSystemStorage()
-            filepath = './eldashboard/reports/{}_{}_{}.pdf'.format(reportname, jobid, reportno)
+            filepath = './reports/{}_{}_{}.pdf'.format(reportname, jobid, reportno)
 
             fs.save(filepath, upfile)
 
@@ -418,11 +426,12 @@ def uploaddata(request):
                 docno = maxno["docno__max"] + 1
 
             fs = FileSystemStorage()
-            filepath = './eldashboard/job_data/JobData_{}_{}.xlsx'.format(jobid, docno)
+            save_filepath = './job_data/JobData_{}_{}.xlsx'.format(jobid, docno)
+            load_filepath = './media/job_data/JobData_{}_{}.xlsx'.format(jobid, docno)
 
-            fs.save(filepath, upfile)
+            fs.save(save_filepath, upfile)
 
-            job_data = JobData.objects.create(job_id=jobid, filepath=filepath, name=name, docno=docno)
+            job_data = JobData.objects.create(job_id=jobid, filepath=load_filepath, name=name, docno=docno)
             job_data.save()
 
         except Exception as e:
