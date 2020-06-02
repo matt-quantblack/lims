@@ -86,6 +86,11 @@ class SampleData:
             result (str): the results value, numbers are passed as strings
         """
 
+        # if testname starts with a % then remove this from the string as this just indcates formatting of results
+        if test_name[0] == '%':
+            test_name = test_name[1:]
+            self.test_units[test_name] = '%'
+
         # if the test already exists add it to the values array otherwise
         # create a new array under that test name
         if test_name not in self.test_results:

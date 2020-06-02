@@ -314,10 +314,14 @@ class ResultsTableBuilder:
                 if test in sample.test_results:
 
                     # add a cell for each of the test replicates
-                    # use the string represenation of these results that would
-                    # have the desired formatting of the google sheets cell
                     for rep in sample.test_results[test]:
-                        row.append(rep)
+                        form_val = float(rep)
+                        if test in sample.test_results_values: #numeric
+                            form_val = "{0}".format(round(form_val, report_precision))
+                        if test in sample.test_units:
+                            form_val += sample.test_units[test]
+
+                        row.append(form_val)
 
                     # add in blank cells if the replicates are not equal to the max
                     for i in range(max_reps - len(sample.test_results[test])):
