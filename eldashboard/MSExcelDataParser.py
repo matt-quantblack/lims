@@ -107,7 +107,10 @@ class MSExcelDataParser:
         for index, row in df.iterrows():
             if pd.notnull(row["Test Name"]) and pd.notnull(row["Result"]):
             # Add the Result for this Test Name to the sample_data test result array
-                sample_data.add_result(row["Test Name"], row["Result"])
+                format = ""
+                if "Format" in row:
+                    format = row["Format"]
+                sample_data.add_result(row["Test Name"], row["Result"], format)
 
                 # if this sample had some useable data then add it to the job object
         if len(sample_data.details) > 0 and len(sample_data.test_results) > 0:

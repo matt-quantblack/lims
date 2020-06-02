@@ -75,7 +75,7 @@ class SampleData:
 
         return name
 
-    def add_result(self, test_name, result):
+    def add_result(self, test_name, result, format):
         """Adds a result to the test_results array and if the result is a number
         it will also be added to the test_results_values array.
         Both arrays make it useful to deal with numbers and strings as results
@@ -89,10 +89,11 @@ class SampleData:
         #remove any leading or trailing white space
         test_name = test_name.strip()
 
-        # if testname starts with a % then remove this from the string as this just indcates formatting of results
-        if test_name[0] == '%':
-            test_name = test_name[1:]
-            self.test_units[test_name] = '%'
+        # optional value unit format
+        self.test_units[test_name] = format
+        #if percentage multiply by 100
+        if format == "%":
+            result = result * 100
 
         # if the test already exists add it to the values array otherwise
         # create a new array under that test name
@@ -103,10 +104,8 @@ class SampleData:
 
         # check if this is a number and if so store it in the values dict
 
-        # if results are expressed as a % then remove this from the string
-        if '%' in result:
-            result = result.replace('%', '')
-            self.test_units[test_name] = '%'
+
+
 
         # check string for regular expression matching a int or float
         if re.match("(\d+(?:\.\d+)?)", result) is not None:
