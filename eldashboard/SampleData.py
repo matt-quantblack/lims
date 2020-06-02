@@ -91,31 +91,33 @@ class SampleData:
 
         # optional value unit format
         self.test_units[test_name] = format
-        #if percentage multiply by 100
-        if format == "%":
-            result = result * 100
+
 
         # if the test already exists add it to the values array otherwise
         # create a new array under that test name
         if test_name not in self.test_results:
             self.test_results[test_name] = []
 
-        self.test_results[test_name].append(result)
+
 
         # check if this is a number and if so store it in the values dict
-
-
-
 
         # check string for regular expression matching a int or float
         if re.match("(\d+(?:\.\d+)?)", result) is not None:
             val = float(result)
+
+            # if percentage multiply by 100
+            if format == "%":
+                val = val * 100
+                result = val
 
             # add the key if it doesn't already exist
             if test_name not in self.test_results_values:
                 self.test_results_values[test_name] = []
 
             self.test_results_values[test_name].append(val)
+
+        self.test_results[test_name].append(result)
 
     def add_detail(self, name, value):
         """Adds a single sample detail

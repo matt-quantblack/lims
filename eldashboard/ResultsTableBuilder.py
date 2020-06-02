@@ -312,12 +312,15 @@ class ResultsTableBuilder:
                 row = [test]
 
                 if test in sample.test_results:
-
                     # add a cell for each of the test replicates
                     for rep in sample.test_results[test]:
-                        form_val = float(rep)
+                        form_val = rep
                         if test in sample.test_results_values: #numeric
-                            form_val = "{0}".format(round(form_val, report_precision))
+                            form_val = float(rep)
+                            if report_precision == 0:
+                                form_val = "{0}".format(int(round(form_val, report_precision)))
+                            else:
+                                form_val = "{0}".format(round(form_val, report_precision))
                         if test in sample.test_units:
                             form_val += sample.test_units[test]
 
@@ -343,9 +346,13 @@ class ResultsTableBuilder:
                         result = sample.result_average(test)
                         std = sample.result_std(test)
                         # format this as a string to the correct precision
-                        std_val = "{0}".format(round(std, report_precision))
-                        # format this as a string to the correct precision
-                        result_val = "{0}".format(round(result, report_precision))
+                        if report_precision == 0:
+                            std_val = "{0}".format(int(round(std, report_precision)))
+                            result_val = "{0}".format(int(round(result, report_precision)))
+                        else:
+                            std_val = "{0}".format(round(std, report_precision))
+                            result_val = "{0}".format(round(result, report_precision))
+
 
                     # check if this is a percentage and add the percent sign
                     if test in sample.test_units:
