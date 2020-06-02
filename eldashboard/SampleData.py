@@ -86,6 +86,9 @@ class SampleData:
             result (str): the results value, numbers are passed as strings
         """
 
+        #remove any leading or trailing white space
+        test_name = test_name.strip()
+
         # if testname starts with a % then remove this from the string as this just indcates formatting of results
         if test_name[0] == '%':
             test_name = test_name[1:]
