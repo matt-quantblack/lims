@@ -221,7 +221,11 @@ class ResultsTableBuilder:
                     else:  # numerical
                         result = sample.result_average(test)
                         # format this as a string to the correct precision
-                        val = "{0}".format(round(result, report_precision))
+                        if report_precision == 0:
+                            val = "{0}".format(int(round(result, report_precision)))
+                        else:
+                            val = "{0}".format(round(result, report_precision))
+
                         # check if this is a percentage and add the percent sign
                         if test in sample.test_units:
                             val += sample.test_units[test]
