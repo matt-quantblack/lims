@@ -13,6 +13,7 @@
 """
 from .SampleData import SampleData
 from .SRGJob import SRGJob
+import datetime
 import math
 import pandas as pd
 
@@ -72,6 +73,8 @@ class MSExcelDataParser:
         # column is the value for the field
         for index, row in df.iterrows():
             if len(row) == 2 and row[0] != '':
+                if isinstance(row[1], datetime.date):
+                    row[1] = row[1].strftime("%d-%m-%Y")
                 job.fields[row[0]] = row[1]
 
     def parse_sample(self, job, df, title):
@@ -109,7 +112,13 @@ class MSExcelDataParser:
             if pd.notnull(row["Test Name"]) and pd.notnull(row["Result"]):
             # Add the Result for this Test Name to the sample_data test result array
                 format = ""
-                if "Format" in row and math.isnan(row["Format"]) is False:
+                if "Format" in row:
+                 if  isinstance(row["Format"], float):
+                     if math.isnan(row["Format"]) is False:
+                         format = row["Format"]
+                     else:
+                         format = ""
+                 else:
                     format = row["Format"]
                 sample_data.add_result(row["Test Name"], row["Result"], format)
 
