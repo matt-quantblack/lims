@@ -6,8 +6,8 @@ from .ResultsTableBuilder import ResultsTableBuilder
 class ReportBuilderTests(unittest.TestCase):
 
     def setUp(self):
-        self.data_doc = "D:/Downloads/Test (2).xlsx"
-        self.template_doc = "D:/Downloads/Test (2).docx"
+        self.data_doc = "D:/Downloads/Data.xlsx"
+        self.template_doc = "D:/Downloads/Report.docx"
         self.save_doc = "./eldashboard/temp_report_docs/Test.docx"
 
     def test_parse_excel(self):

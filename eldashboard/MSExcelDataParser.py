@@ -13,6 +13,7 @@
 """
 from .SampleData import SampleData
 from .SRGJob import SRGJob
+import math
 import pandas as pd
 
 
@@ -108,7 +109,7 @@ class MSExcelDataParser:
             if pd.notnull(row["Test Name"]) and pd.notnull(row["Result"]):
             # Add the Result for this Test Name to the sample_data test result array
                 format = ""
-                if "Format" in row:
+                if "Format" in row and math.isnan(row["Format"]) is False:
                     format = row["Format"]
                 sample_data.add_result(row["Test Name"], row["Result"], format)
 
