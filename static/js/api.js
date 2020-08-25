@@ -443,7 +443,7 @@ $(function () {
 
     //list more results
     $(".search-items-more").click(function () {
-       text = $(this).val();
+       text = $("#search-input").val();
        page = $(this).attr('page');
        apiurl = $("#apiurl").val();
        render_string = $("#renderstring").val();

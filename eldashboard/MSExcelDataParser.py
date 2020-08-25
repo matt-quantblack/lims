@@ -74,7 +74,7 @@ class MSExcelDataParser:
         for index, row in df.iterrows():
             if len(row) == 2 and row[0] != '':
                 if isinstance(row[1], datetime.date):
-                    row[1] = row[1].strftime("%d-%m-%Y")
+                    row[1] = row[1].strftime("%d/%m/ %Y")
                 job.fields[row[0]] = row[1]
 
     def parse_sample(self, job, df, title):
