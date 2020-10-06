@@ -187,7 +187,7 @@
                               <input class="form-check-input should-include" type="checkbox" value="" checked testid="{{ r.id }}">
                             </div></td>
                             <td>{{ r.test.name }}</td>
-                            <td>{{ r.jobsample.sample.name }}</td>
+                            <td>#{{ r.jobsample.sample.id }} {{ r.jobsample.sample.name }} {{ r.jobsample.sample.clientref }} {{ r.jobsample.sample.batch }}</td>
                             <td><input class="form-control testdate-input" value="{{ r.testdate }}" onchange="$('#unsaved').show()" /></td>
                             <td><input class="form-control value-input" value="{{ r.testresult }}" onchange="$('#unsaved').show()"/></td>
                             <td><input class="form-control units-input" value="{{ r.testunits }}" onchange="$('#unsaved').show()"/></td>
