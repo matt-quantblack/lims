@@ -785,7 +785,7 @@ def searchsamples(request):
                                         Q(clientref__icontains=query) | \
                                         Q(name__icontains=query) | \
                                         Q(client__name__icontains=query) | \
-                                        Q(batch__icontains=query)).distinct().order_by("-received")
+                                        Q(batch__icontains=query)).distinct("id").order_by("-received")
     else:
         results = Sample.objects.all().order_by("-received")
 
@@ -822,7 +822,7 @@ def searchjobs(request):
             filter(Q(id__icontains=query) |\
                    Q(client__name__icontains=query) |\
                    Q(id_str__icontains=query) |\
-                   Q(jobsamples__sample__name__icontains=query)).distinct().order_by("-id")
+                   Q(jobsamples__sample__name__icontains=query)).distinct("id").order_by("-id")
 
     else:
         results = Job.objects.all().order_by("-id")
@@ -925,7 +925,7 @@ def searchcontacts(request):
         results = Contacts.objects.filter(Q(client=clientid) & \
                                           (Q(firstname__icontains=query) | \
                                           Q(lastname__icontains=query) | \
-                                          Q(email__icontains=query))).distinct().order_by("firstname")
+                                          Q(email__icontains=query))).distinct("id").order_by("firstname")
     else:
         results = Contacts.objects.filter(client=clientid).order_by("firstname")
 
