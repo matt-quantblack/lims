@@ -925,7 +925,7 @@ def searchcontacts(request):
         results = Contacts.objects.filter(Q(client=clientid) & \
                                           (Q(firstname__icontains=query) | \
                                           Q(lastname__icontains=query) | \
-                                          Q(email__icontains=query))).distinct("id").order_by("firstname")
+                                          Q(email__icontains=query))).distinct().order_by("firstname")
     else:
         results = Contacts.objects.filter(client=clientid).order_by("firstname")
 
