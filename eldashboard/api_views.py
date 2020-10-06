@@ -785,7 +785,7 @@ def searchsamples(request):
                                         Q(clientref__icontains=query) | \
                                         Q(name__icontains=query) | \
                                         Q(client__name__icontains=query) | \
-                                        Q(batch__icontains=query)).distinct("id").order_by("-received")
+                                        Q(batch__icontains=query)).distinct().order_by("-received")
     else:
         results = Sample.objects.all().order_by("-received")
 
