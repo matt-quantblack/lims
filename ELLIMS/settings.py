@@ -20,15 +20,6 @@ from django.core.exceptions import ImproperlyConfigured
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-with open(os.path.join(BASE_DIR, 'secrets.json')) as secrets_file:
-    secrets = json.load(secrets_file)
-
-def get_secret(setting, secrets=secrets):
-    """Get secret setting or fail with ImproperlyConfigured"""
-    try:
-        return secrets[setting]
-    except KeyError:
-        raise ImproperlyConfigured("Set the {} setting".format(setting))
 
 
 # Quick-start development settings - unsuitable for production
@@ -38,7 +29,10 @@ def get_secret(setting, secrets=secrets):
 SECRET_KEY = 'z9q)kf1&*9)5a!b!pl=7l#8gs_4-0)18jp%yx1_&0%cef!2rl6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ['DEBUG'] == 'True':
+    DEBUG = True
+else:
+    DEBUF = False
 
 ALLOWED_HOSTS = ["10.1.1.230", "127.0.0.1", "10.1.1.7"]
 
@@ -99,8 +93,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'eldb',
         'USER': 'postgres',
-        'PASSWORD': get_secret('DB_PASSWORD'),
-        'HOST': 'localhost',
+        'PASSWORD': os.environ['DB_PASS'],
+        'HOST': os.environ['DB_HOST'],
         'PORT': '5432'
     }
 }
