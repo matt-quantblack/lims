@@ -6,7 +6,7 @@
 ./media/temp_report_docs/
 TODO.txt
 *.pyc
-
+./venv
 #confidential
 /secrets.json
 ./eldashboard/credentials.json
@@ -14,3 +14,5 @@ TODO.txt
 
 #python
 __pycache__/
+/venv/
+/venv/
