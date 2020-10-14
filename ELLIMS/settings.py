@@ -32,7 +32,7 @@ SECRET_KEY = os.environ['SECRET']
 if os.environ['DEBUG'] == 'True':
     DEBUG = True
 else:
-    DEBUF = False
+    DEBUG = False
 
 ALLOWED_HOSTS = [os.environ['DJANGO_ALLOWED_HOSTS'], "10.1.1.230", "127.0.0.1", "10.1.1.7"]
 
