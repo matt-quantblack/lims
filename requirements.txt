@@ -10,3 +10,4 @@ python-docx
 matplotlib
 statsmodels
 whitenoise
+dj-config-url
