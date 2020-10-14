@@ -6,4 +6,4 @@ fpdf
 sendgrid
 gunicorn
 pandas
-docx
+python-docx
