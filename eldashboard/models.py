@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import os
 from django.dispatch import receiver
+from ELLIMS.storage_backends import PublicMediaStorage
 
 class CompanyDetail(models.Model):
 
@@ -199,7 +200,7 @@ class ReportTemplates(models.Model):
 
     name = models.CharField(max_length=50, null=False, blank=False)
     report_type = models.ForeignKey(ReportTypes, on_delete=models.CASCADE)
-    document = models.FileField(upload_to='report_templates/')
+    document = models.FileField(storage=PublicMediaStorage())
 
     def __str__(self):
         return self.name
