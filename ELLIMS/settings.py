@@ -144,7 +144,7 @@ if USE_S3:
     # aws settings
     AWS_ACCESS_KEY_ID = os.getenv('FELIX_AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('FELIX_AWS_SECRET_ACCESS_KEY')
-    AWS_STORAGE_BUCKET_NAME = os.getenv('FELIX_AWS_USER_ARN')
+    AWS_STORAGE_BUCKET_NAME ='SharedBucket1'
     AWS_DEFAULT_ACL = None
     AWS_S3_CUSTOM_DOMAIN = f'SharedBucket1.s3.amazonaws.com/ellims_storage'
     AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
