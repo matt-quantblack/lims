@@ -11,3 +11,5 @@ matplotlib
 statsmodels
 whitenoise
 dj-config-url
+django-storages
+
