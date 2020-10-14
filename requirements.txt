@@ -9,3 +9,4 @@ pandas
 python-docx
 matplotlib
 statsmodels
+whitenoise
