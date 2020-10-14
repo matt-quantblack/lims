@@ -99,12 +99,7 @@ DATABASES = {
         'PORT': '5432'
     }
 }
-db_from_env = dj_database_url.config()
-DATABASES['default']['NAME'].update(db_from_env['NAME'])
-DATABASES['default']['USER'].update(db_from_env['USER'])
-DATABASES['default']['PASSWORD'].update(db_from_env['PASSWORD'])
-DATABASES['default']['HOST'].update(db_from_env['HOST'])
-DATABASES['default']['PORT'].update(db_from_env['PORT'])
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
