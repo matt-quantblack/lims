@@ -9,7 +9,7 @@ pandas
 python-docx
 matplotlib
 statsmodels
-whitenoise
 dj-config-url
 django-storages
+boto3
 
