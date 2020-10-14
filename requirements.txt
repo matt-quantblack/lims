@@ -7,3 +7,4 @@ sendgrid
 gunicorn
 pandas
 python-docx
+matplotlib
